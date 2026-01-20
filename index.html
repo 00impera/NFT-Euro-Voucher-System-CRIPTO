@@ -35,7 +35,6 @@
 </head>
 <body class="bg-black text-blue-400 min-h-screen p-6">
   <div class="max-w-4xl mx-auto">
-    <!-- ... your HTML content ... -->
     <!-- Wallet Connection -->
     <div id="walletSection" class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
       <h2 class="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
@@ -176,6 +175,10 @@
     const voucherResult = document.getElementById('voucherResult');
     // --- WALLET CONNECTION ---
     connectBtn.addEventListener('click', async () => {
+      if (!window.ethereum || !window.ethereum.isMetaMask) {
+        showStatus('⚠️ Please install <a href="https://metamask.io/download.html" target="_blank" class="underline text-blue-300">MetaMask</a> to connect.');
+        return;
+      }
       try {
         wallet = await thirdweb.connect({
           client,
@@ -189,6 +192,7 @@
         updatePurchaseButton();
       } catch (err) {
         showStatus('❌ Failed to connect wallet');
+        console.log(err);
       }
     });
     // --- VOUCHER SELECTION ---
@@ -250,11 +254,12 @@
         showStatus('✅ Success! Transaction sent!');
       } catch (error) {
         showStatus('❌ Transaction failed');
+        console.log(error);
       }
     });
     // --- SHOW STATUS ---
     function showStatus(message) {
-      statusText.textContent = message;
+      statusText.innerHTML = message;
       statusMessage.classList.remove('hidden');
     }
     // --- READ VOUCHER LOGIC ---
