@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Euro Voucher System - Monad Blockchain</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/web3@4.3.0/dist/web3.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
     body { font-family: 'JetBrains Mono', monospace; background: #000; }
@@ -84,14 +84,6 @@
         </button>
       </div>
     </div>
-    <!-- Email Input -->
-    <div class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
-      <h2 class="text-xl font-bold text-blue-400 mb-4">[ENTER_EMAIL]</h2>
-      <input type="email" id="emailInput" placeholder="your.email@domain.com"
-        class="w-full px-4 py-3 bg-black border-2 border-blue-500/50 rounded-lg text-blue-400 placeholder-blue-600 focus:outline-none focus:border-blue-400"
-        style="box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.1)">
-      <p class="mt-2 text-sm text-blue-400/60">» Credentials sent after payment confirmation</p>
-    </div>
     <!-- Purchase Button -->
     <button id="purchaseBtn" disabled
       class="w-full bg-blue-500 hover:bg-blue-400 disabled:bg-gray-700 disabled:text-gray-500 text-black font-bold py-4 px-6 rounded-xl transition-all disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-6 neon-glow hover:neon-glow-strong tracking-wider">
@@ -125,7 +117,7 @@
     const CONTRACT_ADDRESS = "0xE52a449392Eb46Fe82845b94aD221cF9BEDedc45";
     const MONAD_CHAIN_ID = "0x8F"; // 143 in hex
     const MONAD_CHAIN_ID_DECIMAL = 143;
-    const MONAD_RPC = "https://rpc.monad.xyz"; // You may need to update this
+    const MONAD_RPC = "https://rpc.monad.xyz";
     
     const CONTRACT_ABI = [
       {
@@ -166,7 +158,6 @@
     const walletAddressSpan = document.getElementById('walletAddress');
     const chainIdSpan = document.getElementById('chainId');
     const voucherBtns = document.querySelectorAll('.voucher-btn');
-    const emailInput = document.getElementById('emailInput');
     const purchaseBtn = document.getElementById('purchaseBtn');
     const statusMessage = document.getElementById('statusMessage');
     const statusText = document.getElementById('statusText');
@@ -176,7 +167,6 @@
 
     // --- WALLET CONNECTION ---
     connectBtn.addEventListener('click', async () => {
-      // Check if MetaMask is installed
       if (typeof window.ethereum === 'undefined') {
         showStatus('⚠️ Please install <a href="https://metamask.io/download.html" target="_blank" class="underline text-blue-300">MetaMask</a> to connect.');
         return;
@@ -185,20 +175,14 @@
       try {
         showStatus('🔄 Connecting to MetaMask...');
 
-        // Request account access
         const accounts = await window.ethereum.request({ 
           method: 'eth_requestAccounts' 
         });
         
         userAddress = accounts[0];
-        
-        // Initialize Web3
         web3 = new Web3(window.ethereum);
-        
-        // Get current chain ID
         const chainId = await web3.eth.getChainId();
         
-        // Check if on Monad network
         if (Number(chainId) !== MONAD_CHAIN_ID_DECIMAL) {
           showStatus('⚠️ Please switch to Monad network...');
           try {
@@ -207,7 +191,6 @@
               params: [{ chainId: MONAD_CHAIN_ID }],
             });
           } catch (switchError) {
-            // Chain not added, try to add it
             if (switchError.code === 4902) {
               try {
                 await window.ethereum.request({
@@ -235,10 +218,8 @@
           }
         }
 
-        // Initialize contract
         contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
 
-        // Update UI
         walletAddressSpan.textContent = userAddress.slice(0, 8) + '...' + userAddress.slice(-6);
         chainIdSpan.textContent = MONAD_CHAIN_ID_DECIMAL;
         connectBtn.classList.add('hidden');
@@ -246,7 +227,6 @@
         statusMessage.classList.add('hidden');
         updatePurchaseButton();
 
-        // Listen for account changes
         window.ethereum.on('accountsChanged', (accounts) => {
           if (accounts.length === 0) {
             location.reload();
@@ -256,7 +236,6 @@
           }
         });
 
-        // Listen for chain changes
         window.ethereum.on('chainChanged', () => {
           location.reload();
         });
@@ -285,23 +264,20 @@
       });
     });
 
-    // --- EMAIL INPUT ---
-    emailInput.addEventListener('input', updatePurchaseButton);
-
     // --- UPDATE PURCHASE BUTTON ---
     function updatePurchaseButton() {
-      if (selectedVoucher && userAddress && emailInput.value.includes('@')) {
+      if (selectedVoucher && userAddress) {
         purchaseBtn.disabled = false;
         purchaseBtn.textContent = `BUY ${selectedVoucher.value}€ FOR ${selectedVoucher.price} MON`;
       } else {
         purchaseBtn.disabled = true;
-        purchaseBtn.textContent = selectedVoucher ? 'ENTER EMAIL' : 'SELECT VOUCHER';
+        purchaseBtn.textContent = 'SELECT VOUCHER';
       }
     }
 
     // --- PURCHASE HANDLER ---
     purchaseBtn.addEventListener('click', async () => {
-      if (!selectedVoucher || !emailInput.value || !userAddress) return;
+      if (!selectedVoucher || !userAddress) return;
 
       showStatus('🔄 Preparing transaction...');
 
@@ -311,7 +287,6 @@
 
         showStatus(`💳 Confirm transaction in MetaMask...`);
 
-        // Call contract function
         const tx = await contract.methods.purchaseVoucher(
           selectedVoucher.value,
           voucherId
@@ -320,12 +295,10 @@
           value: selectedVoucher.priceWei
         });
 
-        showStatus(`✅ Success! Transaction Hash: ${tx.transactionHash.slice(0, 10)}...`);
+        showStatus(`✅ Success! NFT Voucher sent to your wallet. Transaction Hash: ${tx.transactionHash.slice(0, 10)}...`);
         
-        // Clear selection
         voucherBtns.forEach(b => b.classList.remove('selected'));
         selectedVoucher = null;
-        emailInput.value = '';
         updatePurchaseButton();
 
       } catch (error) {
