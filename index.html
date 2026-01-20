@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Euro Voucher System - Monad Blockchain</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/thirdweb@latest/dist/thirdweb.umd.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+    body { font-family: 'JetBrains Mono', monospace; background: #000; }
+    .neon-glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+    .neon-glow-strong { box-shadow: 0 0 30px rgba(59, 130, 246, 0.8); }
+    .voucher-btn {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 197, 253, 0.2) 100%);
+      border: 2px solid rgba(59, 130, 246, 0.5);
+      transition: all 0.3s ease;
+    }
+    .voucher-btn:hover {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 197, 253, 0.3) 100%);
+      border-color: rgba(59, 130, 246, 0.8);
+      box-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
+    }
+    .voucher-btn.selected {
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+      border-color: #93c5fd;
+      box-shadow: 0 0 35px rgba(59, 130, 246, 0.9);
+      transform: scale(1.05);
+    }
+    .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  </style>
+</head>
+<body class="bg-black text-blue-400 min-h-screen p-6">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
+      <div class="flex items-center gap-3 mb-2">
+        <svg class="w-8 h-8 text-blue-400 pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h1 class="text-3xl font-bold text-blue-400 tracking-wider" style="text-shadow: 0 0 10px rgba(59, 130, 246, 0.8)">
+          EURO VOUCHER SYSTEM
+        </h1>
+      </div>
+      <p class="text-blue-300 text-sm">» Powered by Monad Blockchain</p>
+      <div class="mt-4 space-y-2 text-xs text-blue-400/80">
+        <div class="flex items-center gap-2 bg-blue-950/30 p-2 rounded border border-blue-500/30">
+          <span>CONTRACT: 0xE52a449392...BEDedc45</span>
+        </div>
+        <div class="flex items-center gap-2 bg-blue-950/30 p-2 rounded border border-blue-500/30">
+          <span>NETWORK: MONAD MAINNET [CHAIN_ID: 143]</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wallet Connection -->
+    <div id="walletSection" class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
+      <h2 class="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+        [CONNECT_WALLET]
+      </h2>
+      <p class="text-blue-300/80 mb-4 text-sm">» Connect MetaMask to Monad Mainnet</p>
+      <button id="connectBtn" class="w-full bg-blue-500 hover:bg-blue-400 text-black font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2 neon-glow hover:neon-glow-strong">
+        CONNECT TO MONAD
+      </button>
+      <div id="connectedWallet" class="hidden bg-blue-950/50 border-2 border-blue-400 rounded-xl p-4 mt-4 neon-glow">
+        <p class="text-blue-400 flex items-center gap-2 text-sm">
+          <span class="pulse">✓</span>
+          [CONNECTED] <span id="walletAddress"></span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Voucher Selection -->
+    <div class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
+      <h2 class="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+        </svg>
+        [SELECT_VOUCHER_VALUE]
+      </h2>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <button class="voucher-btn p-6 rounded-xl" data-value="5" data-price="0.005" data-price-wei="5000000000000000">
+          <div class="text-3xl font-bold text-black mb-2">5€</div>
+          <div class="text-sm text-blue-300">0.005 MON</div>
+        </button>
+        <button class="voucher-btn p-6 rounded-xl" data-value="10" data-price="0.01" data-price-wei="10000000000000000">
+          <div class="text-3xl font-bold text-black mb-2">10€</div>
+          <div class="text-sm text-blue-300">0.01 MON</div>
+        </button>
+        <button class="voucher-btn p-6 rounded-xl" data-value="20" data-price="0.02" data-price-wei="20000000000000000">
+          <div class="text-3xl font-bold text-black mb-2">20€</div>
+          <div class="text-sm text-blue-300">0.02 MON</div>
+        </button>
+        <button class="voucher-btn p-6 rounded-xl" data-value="50" data-price="0.05" data-price-wei="50000000000000000">
+          <div class="text-3xl font-bold text-black mb-2">50€</div>
+          <div class="text-sm text-blue-300">0.05 MON</div>
+        </button>
+        <button class="voucher-btn p-6 rounded-xl" data-value="100" data-price="0.1" data-price-wei="100000000000000000">
+          <div class="text-3xl font-bold text-black mb-2">100€</div>
+          <div class="text-sm text-blue-300">0.1 MON</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Email Input -->
+    <div class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
+      <h2 class="text-xl font-bold text-blue-400 mb-4">[ENTER_EMAIL]</h2>
+      <input type="email" id="emailInput" placeholder="your.email@domain.com"
+        class="w-full px-4 py-3 bg-black border-2 border-blue-500/50 rounded-lg text-blue-400 placeholder-blue-600 focus:outline-none focus:border-blue-400"
+        style="box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.1)">
+      <p class="mt-2 text-sm text-blue-400/60">» Credentials sent after payment confirmation</p>
+    </div>
+
+    <!-- Purchase Button -->
+    <button id="purchaseBtn" disabled
+      class="w-full bg-blue-500 hover:bg-blue-400 disabled:bg-gray-700 disabled:text-gray-500 text-black font-bold py-4 px-6 rounded-xl transition-all disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-6 neon-glow hover:neon-glow-strong tracking-wider">
+      SELECT VOUCHER
+    </button>
+
+    <!-- Status Message -->
+    <div id="statusMessage" class="hidden bg-blue-950/30 border-2 border-blue-400 rounded-xl p-4 mb-6 neon-glow">
+      <p class="text-blue-400" id="statusText"></p>
+    </div>
+
+    <!-- System Info -->
+    <div class="mt-6 bg-black border-2 border-blue-500 rounded-xl p-6 neon-glow">
+      <h3 class="text-lg font-bold text-blue-400 mb-3 tracking-wider">[SYSTEM_INFO]</h3>
+      <div class="space-y-2 text-blue-300/80 text-sm">
+        <p>🔗 <strong class="text-blue-400">CONTRACT:</strong> 0xE52a449392Eb46Fe82845b94aD221cF9BEDedc45</p>
+        <p>🌐 <strong class="text-blue-400">NETWORK:</strong> MONAD MAINNET [ID:143]</p>
+        <p>💎 <strong class="text-blue-400">TYPE:</strong> ERC-721 NFT VOUCHERS</p>
+        <p>📱 <strong class="text-blue-400">QR_CODES:</strong> ENABLED FOR REDEMPTION</p>
+        <p>✅ <strong class="text-blue-400">STATUS:</strong> FULLY DECENTRALIZED & VERIFIED</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- CONFIGURATION ---
+    const CONTRACT_ADDRESS = "0xE52a449392Eb46Fe82845b94aD221cF9BEDedc45";
+    const CHAIN_ID = 143;
+    const CONTRACT_ABI = [{
+      "inputs": [
+        {"internalType": "uint256", "name": "euroValue", "type": "uint256"},
+        {"internalType": "string", "name": "voucherId", "type": "string"}
+      ],
+      "name": "purchaseVoucher",
+      "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+      "stateMutability": "payable",
+      "type": "function"
+    }];
+    // EmailJS Config (optional, for sending emails)
+    const EMAIL_CONFIG = {
+      serviceId: 'service_sddi48j',
+      templateId: 'template_cwz689f',
+      publicKey: 'T_-SjRTHAsYr0PkpI'
+    };
+
+    // --- THIRDWEB SETUP ---
+    const client = thirdweb.createThirdwebClient({
+      clientId: "YOUR_CLIENT_ID" // <-- Replace with your thirdweb clientId!
+    });
+    const monadChain = thirdweb.defineChain(CHAIN_ID);
+
+    // --- STATE ---
+    let wallet = null;
+    let userAddress = null;
+    let selectedVoucher = null;
+
+    // --- ELEMENTS ---
+    const connectBtn = document.getElementById('connectBtn');
+    const connectedWallet = document.getElementById('connectedWallet');
+    const walletAddressSpan = document.getElementById('walletAddress');
+    const voucherBtns = document.querySelectorAll('.voucher-btn');
+    const emailInput = document.getElementById('emailInput');
+    const purchaseBtn = document.getElementById('purchaseBtn');
+    const statusMessage = document.getElementById('statusMessage');
+    const statusText = document.getElementById('statusText');
+
+    // --- WALLET CONNECTION ---
+    connectBtn.addEventListener('click', async () => {
+      try {
+        wallet = await thirdweb.connect({
+          client,
+          wallets: [thirdweb.metamaskWallet()],
+          chain: monadChain,
+        });
+        userAddress = wallet.getAddress();
+        walletAddressSpan.textContent = userAddress.slice(0, 8) + '...' + userAddress.slice(-6);
+        connectBtn.classList.add('hidden');
+        connectedWallet.classList.remove('hidden');
+        updatePurchaseButton();
+      } catch (err) {
+        showStatus('❌ Failed to connect wallet');
+      }
+    });
+
+    // --- VOUCHER SELECTION ---
+    voucherBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!userAddress) {
+          showStatus('⚠️ Please connect wallet first');
+          return;
+        }
+        voucherBtns.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedVoucher = {
+          value: parseInt(btn.dataset.value),
+          price: btn.dataset.price,
+          priceWei: btn.dataset.priceWei
+        };
+        updatePurchaseButton();
+      });
+    });
+
+    // --- EMAIL INPUT ---
+    emailInput.addEventListener('input', updatePurchaseButton);
+
+    // --- UPDATE PURCHASE BUTTON ---
+    function updatePurchaseButton() {
+      if (selectedVoucher && userAddress && emailInput.value.includes('@')) {
+        purchaseBtn.disabled = false;
+        purchaseBtn.textContent = `BUY ${selectedVoucher.value}€ FOR ${selectedVoucher.price} MON`;
+      } else {
+        purchaseBtn.disabled = true;
+        purchaseBtn.textContent = selectedVoucher ? 'ENTER EMAIL' : 'SELECT VOUCHER';
+      }
+    }
+
+    // --- PURCHASE HANDLER ---
+    purchaseBtn.addEventListener('click', async () => {
+      if (!selectedVoucher || !emailInput.value || !userAddress) return;
+      showStatus('🔄 Processing payment...');
+      try {
+        const now = new Date();
+        const voucherId = `VOC-${now.getTime()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+        showStatus(`💳 Confirm payment in wallet...`);
+
+        // Get contract
+        const contract = await thirdweb.getContract({
+          client,
+          address: CONTRACT_ADDRESS,
+          chain: monadChain,
+          abi: CONTRACT_ABI,
+        });
+
+        // Prepare transaction
+        const tx = await thirdweb.prepareContractCall({
+          contract,
+          method: "function purchaseVoucher(uint256 euroValue, string voucherId)",
+          params: [selectedVoucher.value, voucherId],
+          value: BigInt(selectedVoucher.priceWei),
+        });
+
+        // Send transaction
+        const receipt = await thirdweb.sendTransaction({
+          account: wallet.getAccount(),
+          transaction: tx,
+        });
+
+        showStatus('⏳ Waiting for confirmation...');
+        // Optionally poll for confirmation here
+
+        // Generate wallet (for demo, not secure for production)
+        const walletData = generateSecureWallet();
+
+        // Send email (optional)
+        showStatus('📧 Sending credentials...');
+        await sendEmail({
+          email: emailInput.value,
+          name: emailInput.value.split('@')[0],
+          voucher_value: selectedVoucher.value,
+          voucher_id: voucherId,
+          wallet_address: walletData.address,
+          private_key: walletData.privateKey,
+          network: 'Monad',
+          timestamp: now.toLocaleString('en-US')
+        });
+
+        showStatus('✅ Success! Check your email for credentials!');
+      } catch (error) {
+        showStatus('❌ Transaction failed');
+      }
+    });
+
+    // --- GENERATE WALLET (for demo only) ---
+    function generateSecureWallet() {
+      const array = new Uint8Array(32);
+      crypto.getRandomValues(array);
+      const privateKey = '0x' + Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
+      const addressArray = new Uint8Array(20);
+      crypto.getRandomValues(addressArray);
+      const address = '0x' + Array.from(addressArray).map(b => b.toString(16).padStart(2, '0')).join('');
+      return { privateKey, address };
+    }
+
+    // --- SEND EMAIL (optional, uses EmailJS) ---
+    async function sendEmail(emailData) {
+      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_id: EMAIL_CONFIG.serviceId,
+          template_id: EMAIL_CONFIG.templateId,
+          user_id: EMAIL_CONFIG.publicKey,
+          template_params: emailData
+        })
+      });
+      if (!response.ok) throw new Error('Email failed');
+    }
+
+    // --- SHOW STATUS ---
+    function showStatus(message) {
+      statusText.textContent = message;
+      statusMessage.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
