@@ -173,26 +173,37 @@
     const readTokenId = document.getElementById('readTokenId');
     const readVoucherBtn = document.getElementById('readVoucherBtn');
     const voucherResult = document.getElementById('voucherResult');
-    // --- WALLET CONNECTION ---
+ // --- WALLET CONNECTION ---
     connectBtn.addEventListener('click', async () => {
       if (!window.ethereum || !window.ethereum.isMetaMask) {
         showStatus('⚠️ Please install <a href="https://metamask.io/download.html" target="_blank" class="underline text-blue-300">MetaMask</a> to connect.');
         return;
       }
       try {
-        wallet = await thirdweb.connect({
+        showStatus('🔄 Connecting to wallet...');
+        
+        // Create wallet instance
+        const metamask = thirdweb.metamaskWallet();
+        
+        // Connect wallet
+        wallet = await thirdweb.connectWallet({
           client,
-          wallets: [thirdweb.metamaskWallet()],
+          wallet: metamask,
           chain: monadChain,
         });
-        userAddress = wallet.getAddress();
+        
+        // Get account
+        const account = wallet.getAccount();
+        userAddress = account.address;
+        
         walletAddressSpan.textContent = userAddress.slice(0, 8) + '...' + userAddress.slice(-6);
         connectBtn.classList.add('hidden');
         connectedWallet.classList.remove('hidden');
+        statusMessage.classList.add('hidden');
         updatePurchaseButton();
       } catch (err) {
-        showStatus('❌ Failed to connect wallet');
-        console.log(err);
+        showStatus('❌ Failed to connect wallet: ' + (err.message || 'Unknown error'));
+        console.error('Connection error:', err);
       }
     });
     // --- VOUCHER SELECTION ---
