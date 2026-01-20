@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Euro Voucher System - Monad Blockchain</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FIX: Use a working web3.js CDN (v1.10.4) -->
+  <!-- Use a working web3.js CDN (v1.10.4) -->
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.4/dist/web3.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
@@ -46,12 +46,15 @@
       <button id="connectBtn" class="w-full bg-blue-500 hover:bg-blue-400 text-black font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2 neon-glow hover:neon-glow-strong">
         CONNECT TO MONAD
       </button>
-      <div id="connectedWallet" class="hidden bg-blue-950/50 border-2 border-blue-400 rounded-xl p-4 mt-4 neon-glow">
+      <div id="connectedWallet" class="hidden bg-blue-950/50 border-2 border-blue-400 rounded-xl p-4 mt-4 neon-glow flex flex-col items-start">
         <p class="text-blue-400 flex items-center gap-2 text-sm">
           <span class="pulse">✓</span>
           [CONNECTED] <span id="walletAddress"></span>
         </p>
         <p class="text-blue-300/60 text-xs mt-2">Chain ID: <span id="chainId"></span></p>
+        <button id="disconnectBtn" class="mt-4 bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 rounded-xl transition-all neon-glow-strong">
+          Disconnect
+        </button>
       </div>
     </div>
     <!-- Voucher Selection -->
@@ -156,6 +159,7 @@
     // --- ELEMENTS ---
     const connectBtn = document.getElementById('connectBtn');
     const connectedWallet = document.getElementById('connectedWallet');
+    const disconnectBtn = document.getElementById('disconnectBtn');
     const walletAddressSpan = document.getElementById('walletAddress');
     const chainIdSpan = document.getElementById('chainId');
     const voucherBtns = document.querySelectorAll('.voucher-btn');
@@ -230,7 +234,7 @@
 
         window.ethereum.on('accountsChanged', (accounts) => {
           if (accounts.length === 0) {
-            location.reload();
+            disconnectWallet();
           } else {
             userAddress = accounts[0];
             walletAddressSpan.textContent = userAddress.slice(0, 8) + '...' + userAddress.slice(-6);
@@ -246,6 +250,20 @@
         console.error('Connection error:', error);
       }
     });
+
+    // --- DISCONNECT WALLET ---
+    function disconnectWallet() {
+      userAddress = null;
+      web3 = null;
+      contract = null;
+      connectBtn.classList.remove('hidden');
+      connectedWallet.classList.add('hidden');
+      voucherBtns.forEach(b => b.classList.remove('selected'));
+      selectedVoucher = null;
+      updatePurchaseButton();
+      showStatus('Wallet disconnected.');
+    }
+    disconnectBtn.addEventListener('click', disconnectWallet);
 
     // --- VOUCHER SELECTION ---
     voucherBtns.forEach(btn => {
