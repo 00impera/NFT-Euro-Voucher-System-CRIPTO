@@ -315,7 +315,7 @@
           voucherId
         ).send({
           from: userAddress,
-          value: selectedVoucher.priceWei
+          value: web3.utils.toWei(selectedVoucher.price, 'ether')
         });
 
         showStatus(`✅ Success! NFT Voucher sent to your wallet. Transaction Hash: ${tx.transactionHash.slice(0, 10)}...`);
