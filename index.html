@@ -33,87 +33,7 @@
 </head>
 <body class="bg-black text-blue-400 min-h-screen p-6">
   <div class="max-w-4xl mx-auto">
-    <!-- Header -->
-    <div class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
-      <div class="flex items-center gap-3 mb-2">
-        <svg class="w-8 h-8 text-blue-400 pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <h1 class="text-3xl font-bold text-blue-400 tracking-wider" style="text-shadow: 0 0 10px rgba(59, 130, 246, 0.8)">
-          EURO VOUCHER SYSTEM
-        </h1>
-      </div>
-      <p class="text-blue-300 text-sm">» Powered by Monad Blockchain</p>
-      <div class="mt-4 space-y-2 text-xs text-blue-400/80">
-        <div class="flex items-center gap-2 bg-blue-950/30 p-2 rounded border border-blue-500/30">
-          <span>CONTRACT: 0xE52a449392...BEDedc45</span>
-        </div>
-        <div class="flex items-center gap-2 bg-blue-950/30 p-2 rounded border border-blue-500/30">
-          <span>NETWORK: MONAD MAINNET [CHAIN_ID: 143]</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Wallet Connection -->
-    <div id="walletSection" class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
-      <h2 class="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-        </svg>
-        [CONNECT_WALLET]
-      </h2>
-      <p class="text-blue-300/80 mb-4 text-sm">» Connect MetaMask to Monad Mainnet</p>
-      <button id="connectBtn" class="w-full bg-blue-500 hover:bg-blue-400 text-black font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2 neon-glow hover:neon-glow-strong">
-        CONNECT TO MONAD
-      </button>
-      <div id="connectedWallet" class="hidden bg-blue-950/50 border-2 border-blue-400 rounded-xl p-4 mt-4 neon-glow">
-        <p class="text-blue-400 flex items-center gap-2 text-sm">
-          <span class="pulse">✓</span>
-          [CONNECTED] <span id="walletAddress"></span>
-        </p>
-      </div>
-    </div>
-
-    <!-- Voucher Selection -->
-    <div class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
-      <h2 class="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-        </svg>
-        [SELECT_VOUCHER_VALUE]
-      </h2>
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <button class="voucher-btn p-6 rounded-xl" data-value="5" data-price="0.005" data-price-wei="5000000000000000">
-          <div class="text-3xl font-bold text-black mb-2">5€</div>
-          <div class="text-sm text-blue-300">0.005 MON</div>
-        </button>
-        <button class="voucher-btn p-6 rounded-xl" data-value="10" data-price="0.01" data-price-wei="10000000000000000">
-          <div class="text-3xl font-bold text-black mb-2">10€</div>
-          <div class="text-sm text-blue-300">0.01 MON</div>
-        </button>
-        <button class="voucher-btn p-6 rounded-xl" data-value="20" data-price="0.02" data-price-wei="20000000000000000">
-          <div class="text-3xl font-bold text-black mb-2">20€</div>
-          <div class="text-sm text-blue-300">0.02 MON</div>
-        </button>
-        <button class="voucher-btn p-6 rounded-xl" data-value="50" data-price="0.05" data-price-wei="50000000000000000">
-          <div class="text-3xl font-bold text-black mb-2">50€</div>
-          <div class="text-sm text-blue-300">0.05 MON</div>
-        </button>
-        <button class="voucher-btn p-6 rounded-xl" data-value="100" data-price="0.1" data-price-wei="100000000000000000">
-          <div class="text-3xl font-bold text-black mb-2">100€</div>
-          <div class="text-sm text-blue-300">0.1 MON</div>
-        </button>
-      </div>
-    </div>
-
-    <!-- Email Input -->
-    <div class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
-      <h2 class="text-xl font-bold text-blue-400 mb-4">[ENTER_EMAIL]</h2>
-      <input type="email" id="emailInput" placeholder="your.email@domain.com"
-        class="w-full px-4 py-3 bg-black border-2 border-blue-500/50 rounded-lg text-blue-400 placeholder-blue-600 focus:outline-none focus:border-blue-400"
-        style="box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.1)">
-      <p class="mt-2 text-sm text-blue-400/60">» Credentials sent after payment confirmation</p>
-    </div>
+    <!-- ... (your existing UI above) ... -->
 
     <!-- Purchase Button -->
     <button id="purchaseBtn" disabled
@@ -126,33 +46,58 @@
       <p class="text-blue-400" id="statusText"></p>
     </div>
 
-    <!-- System Info -->
-    <div class="mt-6 bg-black border-2 border-blue-500 rounded-xl p-6 neon-glow">
-      <h3 class="text-lg font-bold text-blue-400 mb-3 tracking-wider">[SYSTEM_INFO]</h3>
-      <div class="space-y-2 text-blue-300/80 text-sm">
-        <p>🔗 <strong class="text-blue-400">CONTRACT:</strong> 0xE52a449392Eb46Fe82845b94aD221cF9BEDedc45</p>
-        <p>🌐 <strong class="text-blue-400">NETWORK:</strong> MONAD MAINNET [ID:143]</p>
-        <p>💎 <strong class="text-blue-400">TYPE:</strong> ERC-721 NFT VOUCHERS</p>
-        <p>📱 <strong class="text-blue-400">QR_CODES:</strong> ENABLED FOR REDEMPTION</p>
-        <p>✅ <strong class="text-blue-400">STATUS:</strong> FULLY DECENTRALIZED & VERIFIED</p>
+    <!-- --- NEW: Read Voucher Section --- -->
+    <div class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
+      <h2 class="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+        </svg>
+        [READ VOUCHER BY TOKEN ID]
+      </h2>
+      <div class="flex gap-2 mb-4">
+        <input type="number" id="readTokenId" placeholder="Enter tokenId"
+          class="w-32 px-4 py-2 bg-black border-2 border-blue-500/50 rounded-lg text-blue-400 placeholder-blue-600 focus:outline-none focus:border-blue-400"/>
+        <button id="readVoucherBtn"
+          class="bg-blue-500 hover:bg-blue-400 text-black font-bold py-2 px-4 rounded-xl transition-all neon-glow hover:neon-glow-strong">
+          Read Voucher
+        </button>
       </div>
+      <div id="voucherResult" class="text-blue-300 text-sm"></div>
     </div>
+
+    <!-- ... (rest of your UI below) ... -->
   </div>
 
   <script>
     // --- CONFIGURATION ---
     const CONTRACT_ADDRESS = "0xE52a449392Eb46Fe82845b94aD221cF9BEDedc45";
     const CHAIN_ID = 143;
-    const CONTRACT_ABI = [{
-      "inputs": [
-        {"internalType": "uint256", "name": "euroValue", "type": "uint256"},
-        {"internalType": "string", "name": "voucherId", "type": "string"}
-      ],
-      "name": "purchaseVoucher",
-      "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-      "stateMutability": "payable",
-      "type": "function"
-    }];
+    const CONTRACT_ABI = [
+      {
+        "inputs": [
+          {"internalType": "uint256", "name": "euroValue", "type": "uint256"},
+          {"internalType": "string", "name": "voucherId", "type": "string"}
+        ],
+        "name": "purchaseVoucher",
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}],
+        "name": "getVoucher",
+        "outputs": [
+          {"internalType": "uint256", "name": "euroValue", "type": "uint256"},
+          {"internalType": "uint256", "name": "pricePaidMON", "type": "uint256"},
+          {"internalType": "address", "name": "buyer", "type": "address"},
+          {"internalType": "uint256", "name": "purchaseTimestamp", "type": "uint256"},
+          {"internalType": "bool", "name": "redeemed", "type": "bool"},
+          {"internalType": "string", "name": "voucherId", "type": "string"}
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ];
     // EmailJS Config (optional, for sending emails)
     const EMAIL_CONFIG = {
       serviceId: 'service_sddi48j',
@@ -180,6 +125,10 @@
     const purchaseBtn = document.getElementById('purchaseBtn');
     const statusMessage = document.getElementById('statusMessage');
     const statusText = document.getElementById('statusText');
+    // New elements for reading voucher
+    const readTokenId = document.getElementById('readTokenId');
+    const readVoucherBtn = document.getElementById('readVoucherBtn');
+    const voucherResult = document.getElementById('voucherResult');
 
     // --- WALLET CONNECTION ---
     connectBtn.addEventListener('click', async () => {
@@ -318,6 +267,40 @@
       statusText.textContent = message;
       statusMessage.classList.remove('hidden');
     }
+
+    // --- READ VOUCHER LOGIC ---
+    readVoucherBtn.addEventListener('click', async () => {
+      const tokenId = readTokenId.value;
+      voucherResult.textContent = '';
+      if (!tokenId || isNaN(tokenId)) {
+        voucherResult.textContent = 'Please enter a valid tokenId.';
+        return;
+      }
+      try {
+        const contract = await thirdweb.getContract({
+          client,
+          address: CONTRACT_ADDRESS,
+          chain: monadChain,
+          abi: CONTRACT_ABI,
+        });
+        const result = await thirdweb.readContract({
+          contract,
+          method: "function getVoucher(uint256 tokenId)",
+          params: [tokenId],
+        });
+        // result: [euroValue, pricePaidMON, buyer, purchaseTimestamp, redeemed, voucherId]
+        voucherResult.innerHTML = `
+          <div><b>euroValue:</b> ${result[0]}</div>
+          <div><b>pricePaidMON:</b> ${result[1]}</div>
+          <div><b>buyer:</b> ${result[2]}</div>
+          <div><b>purchaseTimestamp:</b> ${result[3]}</div>
+          <div><b>redeemed:</b> ${result[4]}</div>
+          <div><b>voucherId:</b> ${result[5]}</div>
+        `;
+      } catch (err) {
+        voucherResult.textContent = 'Error reading voucher: ' + (err.message || err);
+      }
+    });
   </script>
 </body>
 </html>
