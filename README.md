@@ -1,6 +1,8 @@
 # 🎫 Euro Voucher NFT System on Monad Blockchain
 
-![Euro Voucher NFT](https://files.catbox.moe/qlf6vq.jpeg)
+<p align="center">
+  <img src="https://files.catbox.moe/qlf6vq.jpeg" alt="Euro Voucher NFT" width="300"/>
+</p>
 
 A decentralized application (dApp) for purchasing, managing, and redeeming Euro-denominated vouchers as NFTs on the Monad blockchain.
 
@@ -9,6 +11,7 @@ A decentralized application (dApp) for purchasing, managing, and redeeming Euro-
 ## 📋 Table of Contents
 
 - [Overview](#overview)
+- [Euro Banknote Gallery](#euro-banknote-gallery)
 - [Features](#features)
 - [Live Demo](#live-demo)
 - [Smart Contract](#smart-contract)
@@ -38,6 +41,33 @@ Each NFT voucher contains:
 - Purchase timestamp
 - Redemption status
 - Beautiful euro banknote imagery
+
+---
+
+## 💶 Euro Banknote Gallery
+
+<p align="center">
+  <img src="https://files.catbox.moe/mszp1d.jpeg" alt="5 Euro" width="200"/>
+  <img src="https://files.catbox.moe/otcljk.jpeg" alt="10 Euro" width="200"/>
+  <img src="https://files.catbox.moe/c11h9p.jpeg" alt="20 Euro" width="200"/>
+</p>
+
+<p align="center">
+  <img src="https://files.catbox.moe/4jezdg.jpeg" alt="50 Euro" width="200"/>
+  <img src="https://files.catbox.moe/qlf6vq.jpeg" alt="100 Euro" width="200"/>
+  <img src="https://files.catbox.moe/ir84ab.jpeg" alt="500 Euro" width="200"/>
+</p>
+
+### Available Denominations
+
+| Denomination | Image | Price (MON) |
+|--------------|-------|-------------|
+| 5€ | <img src="https://files.catbox.moe/mszp1d.jpeg" width="80"/> | 100 MON |
+| 10€ | <img src="https://files.catbox.moe/otcljk.jpeg" width="80"/> | 200 MON |
+| 20€ | <img src="https://files.catbox.moe/c11h9p.jpeg" width="80"/> | 300 MON |
+| 50€ | <img src="https://files.catbox.moe/4jezdg.jpeg" width="80"/> | 500 MON |
+| 100€ | <img src="https://files.catbox.moe/qlf6vq.jpeg" width="80"/> | 1,000 MON |
+| 500€ | <img src="https://files.catbox.moe/ir84ab.jpeg" width="80"/> | 5,000 MON |
 
 ---
 
@@ -170,20 +200,32 @@ vercel --prod
 ## 📖 Usage
 
 ### 1. **Connect Wallet**
+<img src="https://files.catbox.moe/mszp1d.jpeg" width="60" align="left"/>
+
 - Click "CONNECT TO MONAD"
 - Approve MetaMask connection
 - Switch to Monad network if needed
 
+<br clear="left"/>
+
 ### 2. **Purchase Voucher**
+<img src="https://files.catbox.moe/4jezdg.jpeg" width="60" align="left"/>
+
 - Select denomination (5€ - 500€)
 - Click "BUY" button
 - Confirm transaction in MetaMask
 - Receive NFT in your wallet
 
+<br clear="left"/>
+
 ### 3. **Read Voucher**
+<img src="https://files.catbox.moe/qlf6vq.jpeg" width="60" align="left"/>
+
 - Enter Token ID
 - Click "Read Voucher"
 - View all voucher details
+
+<br clear="left"/>
 
 ### 4. **Transfer Voucher**
 - Use MetaMask to send NFT
@@ -199,6 +241,8 @@ vercel --prod
 ### **📖 Read Functions (View)**
 
 #### `getVoucher(uint256 tokenId)`
+<img src="https://files.catbox.moe/otcljk.jpeg" width="40" align="right"/>
+
 Get complete voucher information.
 
 **Returns:**
@@ -357,6 +401,8 @@ console.log(web3.utils.fromWei(balance, 'ether')); // "5000"
 ### **✍️ Write Functions (Payable/Nonpayable)**
 
 #### `purchaseVoucher(uint256 euroValue, string voucherId)` 💰
+<img src="https://files.catbox.moe/ir84ab.jpeg" width="50" align="right"/>
+
 Purchase a new voucher NFT.
 
 **Parameters:**
@@ -523,14 +569,14 @@ await contract.methods.transferOwnership("0xNewOwner...").send({
 
 ### **Euro Banknote Images**
 
-| Denomination | Image URL |
-|--------------|-----------|
-| 5€ | https://files.catbox.moe/mszp1d.jpeg |
-| 10€ | https://files.catbox.moe/otcljk.jpeg |
-| 20€ | https://files.catbox.moe/c11h9p.jpeg |
-| 50€ | https://files.catbox.moe/4jezdg.jpeg |
-| 100€ | https://files.catbox.moe/qlf6vq.jpeg |
-| 500€ | https://files.catbox.moe/ir84ab.jpeg |
+| Denomination | Preview | Image URL |
+|--------------|---------|-----------|
+| 5€ | <img src="https://files.catbox.moe/mszp1d.jpeg" width="100"/> | https://files.catbox.moe/mszp1d.jpeg |
+| 10€ | <img src="https://files.catbox.moe/otcljk.jpeg" width="100"/> | https://files.catbox.moe/otcljk.jpeg |
+| 20€ | <img src="https://files.catbox.moe/c11h9p.jpeg" width="100"/> | https://files.catbox.moe/c11h9p.jpeg |
+| 50€ | <img src="https://files.catbox.moe/4jezdg.jpeg" width="100"/> | https://files.catbox.moe/4jezdg.jpeg |
+| 100€ | <img src="https://files.catbox.moe/qlf6vq.jpeg" width="100"/> | https://files.catbox.moe/qlf6vq.jpeg |
+| 500€ | <img src="https://files.catbox.moe/ir84ab.jpeg" width="100"/> | https://files.catbox.moe/ir84ab.jpeg |
 
 ---
 
@@ -614,14 +660,14 @@ event PriceUpdated(
 
 ## 📊 Pricing Structure
 
-| Euro Value | Price (MON) | Wei Value |
-|------------|-------------|-----------|
-| 5€ | 100 MON | 100000000000000000000 |
-| 10€ | 200 MON | 200000000000000000000 |
-| 20€ | 300 MON | 300000000000000000000 |
-| 50€ | 500 MON | 500000000000000000000 |
-| 100€ | 1,000 MON | 1000000000000000000000 |
-| 500€ | 5,000 MON | 5000000000000000000000 |
+| Euro Value | Preview | Price (MON) | Wei Value |
+|------------|---------|-------------|-----------|
+| 5€ | <img src="https://files.catbox.moe/mszp1d.jpeg" width="60"/> | 100 MON | 100000000000000000000 |
+| 10€ | <img src="https://files.catbox.moe/otcljk.jpeg" width="60"/> | 200 MON | 200000000000000000000 |
+| 20€ | <img src="https://files.catbox.moe/c11h9p.jpeg" width="60"/> | 300 MON | 300000000000000000000 |
+| 50€ | <img src="https://files.catbox.moe/4jezdg.jpeg" width="60"/> | 500 MON | 500000000000000000000 |
+| 100€ | <img src="https://files.catbox.moe/qlf6vq.jpeg" width="60"/> | 1,000 MON | 1000000000000000000000 |
+| 500€ | <img src="https://files.catbox.moe/ir84ab.jpeg" width="60"/> | 5,000 MON | 5000000000000000000000 |
 
 ---
 
@@ -696,6 +742,15 @@ This is an experimental project. Always do your own research before interacting 
 
 ---
 
-**Built with ❤️ on Monad Blockchain** 🚀
+<p align="center">
+  <img src="https://files.catbox.moe/mszp1d.jpeg" width="80"/>
+  <img src="https://files.catbox.moe/otcljk.jpeg" width="80"/>
+  <img src="https://files.catbox.moe/c11h9p.jpeg" width="80"/>
+  <img src="https://files.catbox.moe/4jezdg.jpeg" width="80"/>
+  <img src="https://files.catbox.moe/qlf6vq.jpeg" width="80"/>
+  <img src="https://files.catbox.moe/ir84ab.jpeg" width="80"/>
+</p>
 
-![Monad Logo](https://files.catbox.moe/qlf6vq.jpeg)
+<p align="center">
+  <strong>Built with ❤️ on Monad Blockchain</strong> 🚀
+</p>
