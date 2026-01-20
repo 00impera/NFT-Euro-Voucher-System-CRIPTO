@@ -4,10 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Euro Voucher System - Monad Blockchain</title>
-  <!-- Tailwind CDN (OK for demos/GitHub Pages) -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- thirdweb CDN -->
-  <script src="https://unpkg.com/thirdweb@latest/dist/thirdweb.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
     body { font-family: 'JetBrains Mono', monospace; background: #000; }
@@ -52,6 +50,7 @@
           <span class="pulse">✓</span>
           [CONNECTED] <span id="walletAddress"></span>
         </p>
+        <p class="text-blue-300/60 text-xs mt-2">Chain ID: <span id="chainId"></span></p>
       </div>
     </div>
     <!-- Voucher Selection -->
@@ -124,7 +123,10 @@
   <script>
     // --- CONFIGURATION ---
     const CONTRACT_ADDRESS = "0xE52a449392Eb46Fe82845b94aD221cF9BEDedc45";
-    const CHAIN_ID = 143;
+    const MONAD_CHAIN_ID = "0x8F"; // 143 in hex
+    const MONAD_CHAIN_ID_DECIMAL = 143;
+    const MONAD_RPC = "https://rpc.monad.xyz"; // You may need to update this
+    
     const CONTRACT_ABI = [
       {
         "inputs": [
@@ -151,61 +153,120 @@
         "type": "function"
       }
     ];
-    // --- THIRDWEB SETUP ---
-    const client = thirdweb.createThirdwebClient({
-      clientId: "P5kPPxAUFvYIM_NFI1UQwpnuDxknnF_v2FQ1vIdt9hKAiIuDcYYKWyz3uzxP63wGjyAuM5nD0JNca3d2OMyAXQ"
-    });
-    const monadChain = thirdweb.defineChain(CHAIN_ID);
+
     // --- STATE ---
-    let wallet = null;
+    let web3;
+    let contract;
     let userAddress = null;
     let selectedVoucher = null;
+
     // --- ELEMENTS ---
     const connectBtn = document.getElementById('connectBtn');
     const connectedWallet = document.getElementById('connectedWallet');
     const walletAddressSpan = document.getElementById('walletAddress');
+    const chainIdSpan = document.getElementById('chainId');
     const voucherBtns = document.querySelectorAll('.voucher-btn');
     const emailInput = document.getElementById('emailInput');
     const purchaseBtn = document.getElementById('purchaseBtn');
     const statusMessage = document.getElementById('statusMessage');
     const statusText = document.getElementById('statusText');
-    // New elements for reading voucher
     const readTokenId = document.getElementById('readTokenId');
     const readVoucherBtn = document.getElementById('readVoucherBtn');
     const voucherResult = document.getElementById('voucherResult');
- // --- WALLET CONNECTION ---
+
+    // --- WALLET CONNECTION ---
     connectBtn.addEventListener('click', async () => {
-      if (!window.ethereum || !window.ethereum.isMetaMask) {
+      // Check if MetaMask is installed
+      if (typeof window.ethereum === 'undefined') {
         showStatus('⚠️ Please install <a href="https://metamask.io/download.html" target="_blank" class="underline text-blue-300">MetaMask</a> to connect.');
         return;
       }
+
       try {
-        showStatus('🔄 Connecting to wallet...');
-        
-        // Create wallet instance
-        const metamask = thirdweb.metamaskWallet();
-        
-        // Connect wallet
-        wallet = await thirdweb.connectWallet({
-          client,
-          wallet: metamask,
-          chain: monadChain,
+        showStatus('🔄 Connecting to MetaMask...');
+
+        // Request account access
+        const accounts = await window.ethereum.request({ 
+          method: 'eth_requestAccounts' 
         });
         
-        // Get account
-        const account = wallet.getAccount();
-        userAddress = account.address;
+        userAddress = accounts[0];
         
+        // Initialize Web3
+        web3 = new Web3(window.ethereum);
+        
+        // Get current chain ID
+        const chainId = await web3.eth.getChainId();
+        
+        // Check if on Monad network
+        if (Number(chainId) !== MONAD_CHAIN_ID_DECIMAL) {
+          showStatus('⚠️ Please switch to Monad network...');
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: MONAD_CHAIN_ID }],
+            });
+          } catch (switchError) {
+            // Chain not added, try to add it
+            if (switchError.code === 4902) {
+              try {
+                await window.ethereum.request({
+                  method: 'wallet_addEthereumChain',
+                  params: [{
+                    chainId: MONAD_CHAIN_ID,
+                    chainName: 'Monad Mainnet',
+                    nativeCurrency: {
+                      name: 'MON',
+                      symbol: 'MON',
+                      decimals: 18
+                    },
+                    rpcUrls: [MONAD_RPC],
+                    blockExplorerUrls: ['https://explorer.monad.xyz']
+                  }]
+                });
+              } catch (addError) {
+                showStatus('❌ Failed to add Monad network');
+                return;
+              }
+            } else {
+              showStatus('❌ Failed to switch network');
+              return;
+            }
+          }
+        }
+
+        // Initialize contract
+        contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+        // Update UI
         walletAddressSpan.textContent = userAddress.slice(0, 8) + '...' + userAddress.slice(-6);
+        chainIdSpan.textContent = MONAD_CHAIN_ID_DECIMAL;
         connectBtn.classList.add('hidden');
         connectedWallet.classList.remove('hidden');
         statusMessage.classList.add('hidden');
         updatePurchaseButton();
-      } catch (err) {
-        showStatus('❌ Failed to connect wallet: ' + (err.message || 'Unknown error'));
-        console.error('Connection error:', err);
+
+        // Listen for account changes
+        window.ethereum.on('accountsChanged', (accounts) => {
+          if (accounts.length === 0) {
+            location.reload();
+          } else {
+            userAddress = accounts[0];
+            walletAddressSpan.textContent = userAddress.slice(0, 8) + '...' + userAddress.slice(-6);
+          }
+        });
+
+        // Listen for chain changes
+        window.ethereum.on('chainChanged', () => {
+          location.reload();
+        });
+
+      } catch (error) {
+        showStatus('❌ Failed to connect: ' + (error.message || 'Unknown error'));
+        console.error('Connection error:', error);
       }
     });
+
     // --- VOUCHER SELECTION ---
     voucherBtns.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -223,8 +284,10 @@
         updatePurchaseButton();
       });
     });
+
     // --- EMAIL INPUT ---
     emailInput.addEventListener('input', updatePurchaseButton);
+
     // --- UPDATE PURCHASE BUTTON ---
     function updatePurchaseButton() {
       if (selectedVoucher && userAddress && emailInput.value.includes('@')) {
@@ -235,76 +298,87 @@
         purchaseBtn.textContent = selectedVoucher ? 'ENTER EMAIL' : 'SELECT VOUCHER';
       }
     }
+
     // --- PURCHASE HANDLER ---
     purchaseBtn.addEventListener('click', async () => {
       if (!selectedVoucher || !emailInput.value || !userAddress) return;
-      showStatus('🔄 Processing payment...');
+
+      showStatus('🔄 Preparing transaction...');
+
       try {
         const now = new Date();
         const voucherId = `VOC-${now.getTime()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-        showStatus(`💳 Confirm payment in wallet...`);
-        // Get contract
-        const contract = await thirdweb.getContract({
-          client,
-          address: CONTRACT_ADDRESS,
-          chain: monadChain,
-          abi: CONTRACT_ABI,
+
+        showStatus(`💳 Confirm transaction in MetaMask...`);
+
+        // Call contract function
+        const tx = await contract.methods.purchaseVoucher(
+          selectedVoucher.value,
+          voucherId
+        ).send({
+          from: userAddress,
+          value: selectedVoucher.priceWei
         });
-        // Prepare transaction
-        const tx = await thirdweb.prepareContractCall({
-          contract,
-          method: "function purchaseVoucher(uint256 euroValue, string voucherId)",
-          params: [selectedVoucher.value, voucherId],
-          value: BigInt(selectedVoucher.priceWei),
-        });
-        // Send transaction
-        const receipt = await thirdweb.sendTransaction({
-          account: wallet.getAccount(),
-          transaction: tx,
-        });
-        showStatus('✅ Success! Transaction sent!');
+
+        showStatus(`✅ Success! Transaction Hash: ${tx.transactionHash.slice(0, 10)}...`);
+        
+        // Clear selection
+        voucherBtns.forEach(b => b.classList.remove('selected'));
+        selectedVoucher = null;
+        emailInput.value = '';
+        updatePurchaseButton();
+
       } catch (error) {
-        showStatus('❌ Transaction failed');
-        console.log(error);
+        if (error.code === 4001) {
+          showStatus('❌ Transaction rejected by user');
+        } else {
+          showStatus('❌ Transaction failed: ' + (error.message || 'Unknown error'));
+        }
+        console.error('Transaction error:', error);
       }
     });
+
+    // --- READ VOUCHER LOGIC ---
+    readVoucherBtn.addEventListener('click', async () => {
+      const tokenId = readTokenId.value;
+      voucherResult.textContent = '';
+
+      if (!tokenId || isNaN(tokenId)) {
+        voucherResult.textContent = 'Please enter a valid tokenId.';
+        return;
+      }
+
+      if (!contract) {
+        voucherResult.textContent = 'Please connect wallet first.';
+        return;
+      }
+
+      try {
+        voucherResult.textContent = 'Loading...';
+        
+        const result = await contract.methods.getVoucher(tokenId).call();
+
+        voucherResult.innerHTML = `
+          <div class="space-y-1">
+            <div><b>Euro Value:</b> ${result[0]}€</div>
+            <div><b>Price Paid (MON):</b> ${web3.utils.fromWei(result[1], 'ether')} MON</div>
+            <div><b>Buyer:</b> ${result[2]}</div>
+            <div><b>Purchase Time:</b> ${new Date(Number(result[3]) * 1000).toLocaleString()}</div>
+            <div><b>Redeemed:</b> ${result[4] ? 'Yes ✓' : 'No ✗'}</div>
+            <div><b>Voucher ID:</b> ${result[5]}</div>
+          </div>
+        `;
+      } catch (err) {
+        voucherResult.textContent = 'Error: ' + (err.message || 'Token may not exist');
+        console.error('Read error:', err);
+      }
+    });
+
     // --- SHOW STATUS ---
     function showStatus(message) {
       statusText.innerHTML = message;
       statusMessage.classList.remove('hidden');
     }
-    // --- READ VOUCHER LOGIC ---
-    readVoucherBtn.addEventListener('click', async () => {
-      const tokenId = readTokenId.value;
-      voucherResult.textContent = '';
-      if (!tokenId || isNaN(tokenId)) {
-        voucherResult.textContent = 'Please enter a valid tokenId.';
-        return;
-      }
-      try {
-        const contract = await thirdweb.getContract({
-          client,
-          address: CONTRACT_ADDRESS,
-          chain: monadChain,
-          abi: CONTRACT_ABI,
-        });
-        const result = await thirdweb.readContract({
-          contract,
-          method: "function getVoucher(uint256 tokenId)",
-          params: [tokenId],
-        });
-        voucherResult.innerHTML = `
-          <div><b>euroValue:</b> ${result[0]}</div>
-          <div><b>pricePaidMON:</b> ${result[1]}</div>
-          <div><b>buyer:</b> ${result[2]}</div>
-          <div><b>purchaseTimestamp:</b> ${result[3]}</div>
-          <div><b>redeemed:</b> ${result[4]}</div>
-          <div><b>voucherId:</b> ${result[5]}</div>
-        `;
-      } catch (err) {
-        voucherResult.textContent = 'Error reading voucher: ' + (err.message || err);
-      }
-    });
   </script>
 </body>
 </html>
