@@ -110,34 +110,36 @@
       </div>
     </div>
     <!-- Purchase Button -->
-    <button id="purchaseBtn" disabled
-      class="w-full bg-blue-500 hover:bg-blue-400 disabled:bg-gray-700 disabled:text-gray-500 text-black font-bold py-4 px-6 rounded-xl transition-all disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-6 neon-glow hover:neon-glow-strong tracking-wider">
-      SELECT VOUCHER
+<button id="purchaseBtn" disabled
+  class="w-full bg-green-500 hover:bg-green-400 disabled:bg-gray-700 disabled:text-gray-500 text-black font-bold py-4 px-6 rounded-xl transition-all disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-6 neon-glow-green hover:neon-glow-green-strong tracking-wider">
+  SELECT VOUCHER
+</button>
+
+<!-- Status Message -->
+<div id="statusMessage" class="hidden bg-green-950/30 border-2 border-green-400 rounded-xl p-4 mb-6 neon-glow-green">
+  <p class="text-green-400" id="statusText"></p>
+</div>
+
+<!-- Read Voucher Section -->
+<div class="bg-black border-2 border-green-500 rounded-2xl p-6 mb-6 neon-glow-green">
+  <h2 class="text-xl font-bold mb-4 flex items-center gap-2 header-title">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+    </svg>
+    [READ VOUCHER BY TOKEN ID]
+  </h2>
+  <div class="flex gap-2 mb-4">
+    <input type="number" id="readTokenId" placeholder="Enter tokenId"
+      class="w-32 px-4 py-2 bg-black border-2 border-green-500/50 rounded-lg text-green-400 placeholder-green-600 focus:outline-none focus:border-green-400"/>
+    <button id="readVoucherBtn"
+      class="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-4 rounded-xl transition-all neon-glow-green hover:neon-glow-green-strong">
+      Read Voucher
     </button>
-    <!-- Status Message -->
-    <div id="statusMessage" class="hidden bg-blue-950/30 border-2 border-blue-400 rounded-xl p-4 mb-6 neon-glow">
-      <p class="text-blue-400" id="statusText"></p>
-    </div>
-    <!-- Read Voucher Section -->
-    <div class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
-      <h2 class="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-        </svg>
-        [READ VOUCHER BY TOKEN ID]
-      </h2>
-      <div class="flex gap-2 mb-4">
-        <input type="number" id="readTokenId" placeholder="Enter tokenId"
-          class="w-32 px-4 py-2 bg-black border-2 border-blue-500/50 rounded-lg text-blue-400 placeholder-blue-600 focus:outline-none focus:border-blue-400"/>
-        <button id="readVoucherBtn"
-          class="bg-blue-500 hover:bg-blue-400 text-black font-bold py-2 px-4 rounded-xl transition-all neon-glow hover:neon-glow-strong">
-          Read Voucher
-        </button>
-      </div>
-      <div id="voucherResult" class="text-blue-300 text-sm"></div>
-    </div>
   </div>
-  <script>
+  <div id="voucherResult" class="text-green-300 text-sm"></div>
+</div>
+</div>
+<script>
     // --- CONFIGURATION ---
     const CONTRACT_ADDRESS = "0xa4d064E4ac881234961C076d314Abf9ac8d4E4BB";
     const MONAD_CHAIN_ID = "0x8F";
