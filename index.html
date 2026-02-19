@@ -144,7 +144,6 @@
     const MONAD_CHAIN_ID_DECIMAL = 143;
     const MONAD_RPC = "https://rpc.monad.xyz";
     const VAULT_ADDRESS = "0xE00454506f50ac31A0b87324513e28f77Db2a8F9";
-    const SWAP_ROUTER_ADDRESS = "0x334cf8898EecCC0B98420E6910A3ae83A00b32e0";
     const CONTRACT_ABI = [
       {"inputs":[],"stateMutability":"nonpayable","type":"constructor"},
       {"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"address","name":"owner","type":"address"}],"name":"ERC721IncorrectOwner","type":"error"},
@@ -200,7 +199,6 @@
       {"inputs":[],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},
       {"inputs":[{"internalType":"address payable","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdrawTo","outputs":[],"stateMutability":"nonpayable","type":"function"}
     ];
-    
 
     // --- STATE ---
     let web3;
@@ -223,113 +221,68 @@
     const voucherResult = document.getElementById('voucherResult');
 
     // --- WALLET CONNECTION ---
-connectBtn.addEventListener('click', async () => {
-  if (typeof window.ethereum === 'undefined') {
-    showStatus('⚠️ Please install <a href="https://metamask.io/download.html" target="_blank" class="underline text-blue-300">MetaMask</a> to connect.');
-    return;
-  }
-  try {
-    showStatus('🔄 Connecting to MetaMask...');
-    const accounts = await window.ethereum.request({ 
-      method: 'eth_requestAccounts' 
-    });
-    
-    userAddress = accounts[0];
-    web3 = new Web3(window.ethereum);
-    const chainId = await web3.eth.getChainId();
-    
-    if (Number(chainId) !== MONAD_CHAIN_ID_DECIMAL) {
-      showStatus('⚠️ Please switch to Monad network...');
+    connectBtn.addEventListener('click', async () => {
+      if (typeof window.ethereum === 'undefined') {
+        showStatus('⚠️ Please install <a href="https://metamask.io/download.html" target="_blank" class="underline text-blue-300">MetaMask</a> to connect.');
+        return;
+      }
       try {
-        await window.ethereum.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: MONAD_CHAIN_ID }],
-        });
-      } catch (switchError) {
-        if (switchError.code === 4902) {
-          try {
-            await window.ethereum.request({
-              method: 'wallet_addEthereumChain',
-              params: [{
-                chainId: MONAD_CHAIN_ID,
-                chainName: 'Monad Mainnet',
-                nativeCurrency: {
-                  name: 'MON',
-                  symbol: 'MON',
-                  decimals: 18
-                },
-                rpcUrls: [MONAD_RPC],
-                blockExplorerUrls: ['https://explorer.monad.xyz']
-              }]
-            });
-          } catch (addError) {
-            showStatus('❌ Failed to add Monad network');
-            return;
-          }
-        } else {
-          showStatus('❌ Failed to switch network');
-          return;
-        }
-      }
-    }
-
-    contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-    walletAddressSpan.textContent = userAddress.slice(0, 8) + '...' + userAddress.slice(-6);
-    chainIdSpan.textContent = MONAD_CHAIN_ID_DECIMAL;
-    connectBtn.style.display = 'none';         // ← FIXED
-    connectedWallet.style.display = 'block';   // ← FIXED
-    statusMessage.classList.add('hidden');
-    updatePurchaseButton();
-
-    window.ethereum.on('accountsChanged', (accounts) => {
-      if (accounts.length === 0) {
-        disconnectWallet();
-      } else {
+        showStatus('🔄 Connecting to MetaMask...');
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         userAddress = accounts[0];
+        web3 = new Web3(window.ethereum);
+        const chainId = await web3.eth.getChainId();
+        if (Number(chainId) !== MONAD_CHAIN_ID_DECIMAL) {
+          showStatus('⚠️ Please switch to Monad network...');
+          try {
+            await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: MONAD_CHAIN_ID }] });
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              try {
+                await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ chainId: MONAD_CHAIN_ID, chainName: 'Monad Mainnet', nativeCurrency: { name: 'MON', symbol: 'MON', decimals: 18 }, rpcUrls: [MONAD_RPC], blockExplorerUrls: ['https://explorer.monad.xyz'] }] });
+              } catch (addError) { showStatus('❌ Failed to add Monad network'); return; }
+            } else { showStatus('❌ Failed to switch network'); return; }
+          }
+        }
+        contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
         walletAddressSpan.textContent = userAddress.slice(0, 8) + '...' + userAddress.slice(-6);
+        chainIdSpan.textContent = MONAD_CHAIN_ID_DECIMAL;
+        connectBtn.style.display = 'none';
+        connectedWallet.style.display = 'block';
+        statusMessage.classList.add('hidden');
+        updatePurchaseButton();
+        window.ethereum.on('accountsChanged', (accounts) => {
+          if (accounts.length === 0) { disconnectWallet(); }
+          else { userAddress = accounts[0]; walletAddressSpan.textContent = userAddress.slice(0, 8) + '...' + userAddress.slice(-6); }
+        });
+        window.ethereum.on('chainChanged', () => { location.reload(); });
+      } catch (error) {
+        showStatus('❌ Failed to connect: ' + (error.message || 'Unknown error'));
       }
     });
 
-    window.ethereum.on('chainChanged', () => {
-      location.reload();
-    });
+    function disconnectWallet() {
+      userAddress = null; web3 = null; contract = null;
+      connectBtn.style.display = 'block';
+      connectedWallet.style.display = 'none';
+      voucherBtns.forEach(b => b.classList.remove('selected'));
+      selectedVoucher = null;
+      updatePurchaseButton();
+      showStatus('Wallet disconnected.');
+    }
+    disconnectBtn.addEventListener('click', disconnectWallet);
 
-  } catch (error) {
-    showStatus('❌ Failed to connect: ' + (error.message || 'Unknown error'));
-    console.error('Connection error:', error);
-  }
-});
-
-function disconnectWallet() {
-  userAddress = null;
-  web3 = null;
-  contract = null;
-  connectBtn.style.display = 'block';
-  connectedWallet.style.display = 'none';
-  voucherBtns.forEach(b => b.classList.remove('selected'));
-  selectedVoucher = null;
-  updatePurchaseButton();
-  showStatus('Wallet disconnected.');
-}
-disconnectBtn.addEventListener('click', disconnectWallet);
     // --- VOUCHER SELECTION ---
     voucherBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        if (!userAddress) {
-          showStatus('⚠️ Please connect wallet first');
-          return;
-        }
+        if (!userAddress) { showStatus('⚠️ Please connect wallet first'); return; }
         voucherBtns.forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
-        selectedVoucher = {
-          value: parseInt(btn.dataset.value),
-          price: btn.dataset.price
-        };
+        selectedVoucher = { value: parseInt(btn.dataset.value), price: btn.dataset.price };
         updatePurchaseButton();
       });
     });
 
-    // --- UPDATE PURCHASE BUTTON ---
     function updatePurchaseButton() {
       if (selectedVoucher && userAddress) {
         purchaseBtn.disabled = false;
@@ -341,71 +294,41 @@ disconnectBtn.addEventListener('click', disconnectWallet);
     }
 
     // --- PURCHASE HANDLER ---
-   purchaseBtn.addEventListener('click', async () => {
-  if (!selectedVoucher || !userAddress) return;
-
-  showStatus('🔄 Preparing transaction...');
-
-  try {
-    const now = new Date();
-    const voucherId = `VOC-${now.getTime()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-
-    showStatus(`💳 Confirm transaction in MetaMask...`);
-
-    const tx = await contract.methods.purchaseVoucher(
-      selectedVoucher.value,
-      voucherId
-    ).send({
-      from: userAddress,
-      value: web3.utils.toWei(selectedVoucher.price, 'ether')
+    purchaseBtn.addEventListener('click', async () => {
+      if (!selectedVoucher || !userAddress) return;
+      showStatus('🔄 Preparing transaction...');
+      try {
+        const voucherId = `VOC-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+        showStatus('💳 Confirm transaction in MetaMask...');
+        const tx = await contract.methods.purchaseVoucher(selectedVoucher.value, voucherId).send({
+          from: userAddress,
+          value: web3.utils.toWei(selectedVoucher.price, 'ether')
+        });
+        let tokenId = null;
+        if (tx.events && tx.events.VoucherPurchased) {
+          tokenId = tx.events.VoucherPurchased.returnValues.tokenId;
+        } else {
+          tokenId = tx.logs?.[0]?.topics?.[1] ? parseInt(tx.logs[0].topics[1], 16) : '?';
+        }
+        showStatus(`✅ Voucher #${tokenId} minted successfully! TX: ${tx.transactionHash.slice(0,10)}...`);
+        voucherBtns.forEach(b => b.classList.remove('selected'));
+        selectedVoucher = null;
+        updatePurchaseButton();
+      } catch (error) {
+        if (error.code === 4001) { showStatus('❌ Transaction rejected by user'); }
+        else { showStatus('❌ Transaction failed: ' + (error.message || 'Unknown error')); }
+      }
     });
 
-    // Safely extract tokenId
-    let tokenId = null;
-    if (tx.events && tx.events.VoucherPurchased) {
-      tokenId = tx.events.VoucherPurchased.returnValues.tokenId;
-    } else {
-      // Fallback: parse logs manually
-      tokenId = tx.logs?.[0]?.topics?.[1] 
-        ? parseInt(tx.logs[0].topics[1], 16) 
-        : '?';
-    }
-
-    showStatus(`✅ Voucher #${tokenId} minted successfully! TX: ${tx.transactionHash.slice(0,10)}...`);
-
-    voucherBtns.forEach(b => b.classList.remove('selected'));
-    selectedVoucher = null;
-    updatePurchaseButton();
-
-  } catch (error) {
-    if (error.code === 4001) {
-      showStatus('❌ Transaction rejected by user');
-    } else {
-      showStatus('❌ Transaction failed: ' + (error.message || 'Unknown error'));
-    }
-    console.error('Transaction error:', error);
-  }
-});
-    // --- READ VOUCHER LOGIC ---
+    // --- READ VOUCHER ---
     readVoucherBtn.addEventListener('click', async () => {
       const tokenId = readTokenId.value;
       voucherResult.textContent = '';
-
-      if (!tokenId || isNaN(tokenId)) {
-        voucherResult.textContent = 'Please enter a valid tokenId.';
-        return;
-      }
-
-      if (!contract) {
-        voucherResult.textContent = 'Please connect wallet first.';
-        return;
-      }
-
+      if (!tokenId || isNaN(tokenId)) { voucherResult.textContent = 'Please enter a valid tokenId.'; return; }
+      if (!contract) { voucherResult.textContent = 'Please connect wallet first.'; return; }
       try {
         voucherResult.textContent = 'Loading...';
-        
         const result = await contract.methods.getVoucher(tokenId).call();
-
         voucherResult.innerHTML = `
           <div class="space-y-1">
             <div><b>Euro Value:</b> ${result[0]}€</div>
@@ -414,19 +337,60 @@ disconnectBtn.addEventListener('click', disconnectWallet);
             <div><b>Purchase Time:</b> ${new Date(Number(result[3]) * 1000).toLocaleString()}</div>
             <div><b>Redeemed:</b> ${result[4] ? 'Yes ✓' : 'No ✗'}</div>
             <div><b>Voucher ID:</b> ${result[5]}</div>
-          </div>
-        `;
+          </div>`;
       } catch (err) {
         voucherResult.textContent = 'Error: ' + (err.message || 'Token may not exist');
-        console.error('Read error:', err);
       }
     });
 
-    // --- SHOW STATUS ---
     function showStatus(message) {
       statusText.innerHTML = message;
       statusMessage.classList.remove('hidden');
     }
+
+    // --- VAULT SETUP BUTTON (owner only) ---
+    async function setupVault() {
+      if (!userAddress) { alert('Connect wallet first!'); return; }
+      try {
+        const vault = new web3.eth.Contract([
+          {"inputs":[{"internalType":"address[]","name":"tokens","type":"address[]"}],"name":"addTokensBatch","outputs":[],"stateMutability":"nonpayable","type":"function"},
+          {"inputs":[{"internalType":"uint256","name":"euroValue","type":"uint256"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"setRewardAmount","outputs":[],"stateMutability":"nonpayable","type":"function"}
+        ], VAULT_ADDRESS);
+
+        alert('Step 1/2: Adding 22 tokens to vault pool... Confirm in MetaMask.');
+        await vault.methods.addTokensBatch([
+          "0x754704Bc059F8C67012fEd69BC8A327a5aafb603","0x3bd359C1119dA7Da1D913D1C4D2B7c461115433A",
+          "0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a","0xEE8c0E9f1BFFb4Eb878d8f15f368A02a35481242",
+          "0xe7cd86e13AC4309349F30B3435a9d337750fC82D","0x111111d2bf19e43C34263401e0CAd979eD1cdb61",
+          "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c","0x0c65A0BC65a5D819235B71F554D210D3F80E0852",
+          "0x01bFF41798a0BcF287b996046Ca68b395DbC1071","0x1001fF13bf368Aa4fa85F21043648079F00E1001",
+          "0x0a332311633C0625f63CFc51EE33fC49826E0a3C","0x10Aeaf63194db8d453d4D85a06E5eFE1dd0b5417",
+          "0x350035555E10d9AfAF1566AaebfCeD5BA6C27777","0xA3227C5969757783154C60bF0bC1944180ed81B9",
+          "0xb8198c654B25c0Af2947E95e268376e520aa7777","0x1B68626dCa36c7fE922fD2d55E4f631d962dE19c",
+          "0x808740fB3317e55e37699DF7f9F10E7A95FA7777","0xAD96C3dffCD6374294e2573A7fBBA96097CC8d7c",
+          "0xF59D81cd43f620E722E07f9Cb3f6E41B031017a3","0x8498312A6B3CbD158bf0c93AbdCF29E6e4F55081",
+          "0x91b81bfbe3A747230F0529Aa28d8b2Bc898E6D56","0xFD44B35139Ae53FFF7d8F2A9869c503D987f00d1"
+        ]).send({ from: userAddress });
+
+        alert('✅ Tokens added! Step 2/2: Setting reward amounts (6 transactions)...');
+        await vault.methods.setRewardAmount(5,   "1000000000000000000").send({ from: userAddress });
+        await vault.methods.setRewardAmount(10,  "1000000000000000000").send({ from: userAddress });
+        await vault.methods.setRewardAmount(20,  "1000000000000000000").send({ from: userAddress });
+        await vault.methods.setRewardAmount(50,  "1000000000000000000").send({ from: userAddress });
+        await vault.methods.setRewardAmount(100, "1000000000000000000").send({ from: userAddress });
+        await vault.methods.setRewardAmount(500, "1000000000000000000").send({ from: userAddress });
+
+        alert('🎉 VAULT FULLY SET UP! Users will now receive 1 random token when buying any voucher.');
+      } catch(e) {
+        alert('ERROR: ' + e.message);
+      }
+    }
   </script>
+
+  <!-- OWNER ONLY: Vault Setup Button - remove after setup is done -->
+  <button onclick="setupVault()" style="position:fixed;bottom:20px;right:20px;background:#ef4444;color:white;padding:15px 20px;font-size:14px;font-weight:bold;z-index:9999;border-radius:10px;cursor:pointer;border:none;font-family:monospace;">
+    🔧 SETUP VAULT
+  </button>
+
 </body>
 </html>
