@@ -717,7 +717,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Contact
 
 **Project Maintainer:** Impera
-
+const VAULT_ADDRESS = `0xE00454506f50ac31A0b87324513e28f77Db2a8F9`
+const SWAP_ROUTER_ADDRESS = `0x334cf8898EecCC0B98420E6910A3ae83A00b32e0`
 **Contract Address:** `0xa4d064E4ac881234961C076d314Abf9ac8d4E4BB`
 
 **Frontend:** https://euro-voucher-frontend.vercel.app
