@@ -8,7 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.4/dist/web3.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
-   body { font-family: 'JetBrains Mono', monospace; background: radial-gradient(circle at center, rgba(0, 180, 255, 0.6), rgba(0, 0, 40, 1) 70%, #000 100%); }
+    body { font-family: 'JetBrains Mono', monospace; background: radial-gradient(circle at center, rgba(0, 180, 255, 0.6), rgba(0, 0, 40, 1) 70%, #000 100%); }
     .neon-glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
     .neon-glow-strong { box-shadow: 0 0 30px rgba(59, 130, 246, 0.8); }
     .voucher-btn {
@@ -29,42 +29,66 @@
     }
     .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .red-neon-text {
+      color: #ff0000;
+      text-shadow: 0 0 8px #ff0000, 0 0 20px #ff0000, 0 0 40px #cc0000;
+    }
+    .coin-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(59, 130, 246, 0.5);
+      transition: all 0.3s ease;
+    }
+    .coin-logo:hover {
+      border-color: #60a5fa;
+      box-shadow: 0 0 14px rgba(59,130,246,0.9);
+      transform: scale(1.15);
+    }
   </style>
 </head>
 <body class="bg-black text-blue-400 min-h-screen p-6">
   <div class="max-w-4xl mx-auto">
-  <!-- Wallet Connection -->
-<div id="walletSection" class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
-  <h2 class="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-    </svg>
-    [CONNECT_WALLET]
-  </h2>
-  <p class="text-blue-300/80 mb-4 text-sm">» Connect MetaMask to Monad Mainnet</p>
-  <button id="connectBtn" class="w-full bg-blue-500 hover:bg-blue-400 text-black font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2 neon-glow hover:neon-glow-strong">
-    CONNECT TO MONAD
-  </button>
-  <div id="connectedWallet" style="display:none;" class="bg-blue-950/50 border-2 border-blue-400 rounded-xl p-4 mt-4 neon-glow">
-    <p class="text-blue-400 flex items-center gap-2 text-sm">
-      <span class="pulse">✓</span>
-      [CONNECTED] <span id="walletAddress"></span>
-    </p>
-    <p class="text-blue-300/60 text-xs mt-2">Chain ID: <span id="chainId"></span></p>
-    <button id="disconnectBtn" class="mt-4 bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 rounded-xl transition-all neon-glow-strong">
-      Disconnect
-    </button>
-  </div>
-</div>
-    <!-- Voucher Selection -->
-    <div class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
+
+    <!-- LOGO -->
+    <div class="flex justify-center mb-6">
+      <img src="https://scarlet-central-krill-672.mypinata.cloud/ipfs/bafybeiaho7h7ysvoxmoqvi7rveh2rcls6rh4weagezoi6umctfpgrgkvp4" alt="Logo" class="h-28 object-contain" style="filter: drop-shadow(0 0 20px rgba(59,130,246,0.8));">
+    </div>
+
+    <!-- Wallet Connection -->
+    <div id="walletSection" class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
       <h2 class="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+        [CONNECT_WALLET]
+      </h2>
+      <p class="text-blue-300/80 mb-4 text-sm">» Connect MetaMask to Monad Mainnet</p>
+      <button id="connectBtn" class="w-full bg-blue-500 hover:bg-blue-400 text-black font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2 neon-glow hover:neon-glow-strong">
+        CONNECT TO MONAD
+      </button>
+      <div id="connectedWallet" style="display:none;" class="bg-blue-950/50 border-2 border-blue-400 rounded-xl p-4 mt-4 neon-glow">
+        <p class="text-blue-400 flex items-center gap-2 text-sm">
+          <span class="pulse">✓</span>
+          [CONNECTED] <span id="walletAddress"></span>
+        </p>
+        <p class="text-blue-300/60 text-xs mt-2">Chain ID: <span id="chainId"></span></p>
+        <button id="disconnectBtn" class="mt-4 bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 rounded-xl transition-all neon-glow-strong">
+          Disconnect
+        </button>
+      </div>
+    </div>
+
+    <!-- Voucher Selection -->
+    <div class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
+      <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
         </svg>
-        [SELECT_VOUCHER_VALUE]
+        <span class="red-neon-text">SELECT COINS VALUE</span>
       </h2>
-     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <button class="voucher-btn p-6 rounded-xl relative overflow-hidden" data-value="5" data-price="100">
           <img src="https://files.catbox.moe/mszp1d.jpeg" alt="5 Euro" class="absolute inset-0 w-full h-full object-cover opacity-20">
           <div class="relative z-10">
@@ -109,15 +133,18 @@
         </button>
       </div>
     </div>
+
     <!-- Purchase Button -->
     <button id="purchaseBtn" disabled
       class="w-full bg-blue-500 hover:bg-blue-400 disabled:bg-gray-700 disabled:text-gray-500 text-black font-bold py-4 px-6 rounded-xl transition-all disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-6 neon-glow hover:neon-glow-strong tracking-wider">
       SELECT VOUCHER
     </button>
+
     <!-- Status Message -->
     <div id="statusMessage" class="hidden bg-blue-950/30 border-2 border-blue-400 rounded-xl p-4 mb-6 neon-glow">
       <p class="text-blue-400" id="statusText"></p>
     </div>
+
     <!-- Read Voucher Section -->
     <div class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
       <h2 class="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
@@ -136,9 +163,23 @@
       </div>
       <div id="voucherResult" class="text-blue-300 text-sm"></div>
     </div>
+
+    <!-- Coin Logos Footer -->
+    <div class="bg-black border-2 border-blue-500 rounded-2xl p-6 mb-6 neon-glow">
+      <p class="text-center text-xs tracking-widest mb-4" style="color: rgba(59,130,246,0.6);">» REWARD TOKEN POOL «</p>
+      <div class="flex justify-center items-center gap-5 flex-wrap">
+        <img src="https://files.catbox.moe/mszp1d.jpeg" alt="Token" class="coin-logo">
+        <img src="https://files.catbox.moe/otcljk.jpeg" alt="Token" class="coin-logo">
+        <img src="https://files.catbox.moe/c11h9p.jpeg" alt="Token" class="coin-logo">
+        <img src="https://files.catbox.moe/4jezdg.jpeg" alt="Token" class="coin-logo">
+        <img src="https://files.catbox.moe/qlf6vq.jpeg" alt="Token" class="coin-logo">
+        <img src="https://files.catbox.moe/ir84ab.jpeg" alt="Token" class="coin-logo">
+      </div>
+    </div>
+
   </div>
+
   <script>
-    // --- CONFIGURATION ---
     const CONTRACT_ADDRESS = "0xa4d064E4ac881234961C076d314Abf9ac8d4E4BB";
     const MONAD_CHAIN_ID = "0x8F";
     const MONAD_CHAIN_ID_DECIMAL = 143;
@@ -200,13 +241,8 @@
       {"inputs":[{"internalType":"address payable","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdrawTo","outputs":[],"stateMutability":"nonpayable","type":"function"}
     ];
 
-    // --- STATE ---
-    let web3;
-    let contract;
-    let userAddress = null;
-    let selectedVoucher = null;
+    let web3, contract, userAddress = null, selectedVoucher = null;
 
-    // --- ELEMENTS ---
     const connectBtn = document.getElementById('connectBtn');
     const connectedWallet = document.getElementById('connectedWallet');
     const disconnectBtn = document.getElementById('disconnectBtn');
@@ -220,7 +256,6 @@
     const readVoucherBtn = document.getElementById('readVoucherBtn');
     const voucherResult = document.getElementById('voucherResult');
 
-    // --- WALLET CONNECTION ---
     connectBtn.addEventListener('click', async () => {
       if (typeof window.ethereum === 'undefined') {
         showStatus('⚠️ Please install <a href="https://metamask.io/download.html" target="_blank" class="underline text-blue-300">MetaMask</a> to connect.');
@@ -272,7 +307,6 @@
     }
     disconnectBtn.addEventListener('click', disconnectWallet);
 
-    // --- VOUCHER SELECTION ---
     voucherBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         if (!userAddress) { showStatus('⚠️ Please connect wallet first'); return; }
@@ -293,7 +327,6 @@
       }
     }
 
-    // --- PURCHASE HANDLER ---
     purchaseBtn.addEventListener('click', async () => {
       if (!selectedVoucher || !userAddress) return;
       showStatus('🔄 Preparing transaction...');
@@ -320,7 +353,6 @@
       }
     });
 
-    // --- READ VOUCHER ---
     readVoucherBtn.addEventListener('click', async () => {
       const tokenId = readTokenId.value;
       voucherResult.textContent = '';
@@ -347,50 +379,6 @@
       statusText.innerHTML = message;
       statusMessage.classList.remove('hidden');
     }
-
-    // --- VAULT SETUP BUTTON (owner only) ---
-    async function setupVault() {
-      if (!userAddress) { alert('Connect wallet first!'); return; }
-      try {
-        const vault = new web3.eth.Contract([
-          {"inputs":[{"internalType":"address[]","name":"tokens","type":"address[]"}],"name":"addTokensBatch","outputs":[],"stateMutability":"nonpayable","type":"function"},
-          {"inputs":[{"internalType":"uint256","name":"euroValue","type":"uint256"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"setRewardAmount","outputs":[],"stateMutability":"nonpayable","type":"function"}
-        ], VAULT_ADDRESS);
-
-        alert('Step 1/2: Adding 22 tokens to vault pool... Confirm in MetaMask.');
-        await vault.methods.addTokensBatch([
-          "0x754704Bc059F8C67012fEd69BC8A327a5aafb603","0x3bd359C1119dA7Da1D913D1C4D2B7c461115433A",
-          "0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a","0xEE8c0E9f1BFFb4Eb878d8f15f368A02a35481242",
-          "0xe7cd86e13AC4309349F30B3435a9d337750fC82D","0x111111d2bf19e43C34263401e0CAd979eD1cdb61",
-          "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c","0x0c65A0BC65a5D819235B71F554D210D3F80E0852",
-          "0x01bFF41798a0BcF287b996046Ca68b395DbC1071","0x1001fF13bf368Aa4fa85F21043648079F00E1001",
-          "0x0a332311633C0625f63CFc51EE33fC49826E0a3C","0x10Aeaf63194db8d453d4D85a06E5eFE1dd0b5417",
-          "0x350035555E10d9AfAF1566AaebfCeD5BA6C27777","0xA3227C5969757783154C60bF0bC1944180ed81B9",
-          "0xb8198c654B25c0Af2947E95e268376e520aa7777","0x1B68626dCa36c7fE922fD2d55E4f631d962dE19c",
-          "0x808740fB3317e55e37699DF7f9F10E7A95FA7777","0xAD96C3dffCD6374294e2573A7fBBA96097CC8d7c",
-          "0xF59D81cd43f620E722E07f9Cb3f6E41B031017a3","0x8498312A6B3CbD158bf0c93AbdCF29E6e4F55081",
-          "0x91b81bfbe3A747230F0529Aa28d8b2Bc898E6D56","0xFD44B35139Ae53FFF7d8F2A9869c503D987f00d1"
-        ]).send({ from: userAddress });
-
-        alert('✅ Tokens added! Step 2/2: Setting reward amounts (6 transactions)...');
-        await vault.methods.setRewardAmount(5,   "1000000000000000000").send({ from: userAddress });
-        await vault.methods.setRewardAmount(10,  "1000000000000000000").send({ from: userAddress });
-        await vault.methods.setRewardAmount(20,  "1000000000000000000").send({ from: userAddress });
-        await vault.methods.setRewardAmount(50,  "1000000000000000000").send({ from: userAddress });
-        await vault.methods.setRewardAmount(100, "1000000000000000000").send({ from: userAddress });
-        await vault.methods.setRewardAmount(500, "1000000000000000000").send({ from: userAddress });
-
-        alert('🎉 VAULT FULLY SET UP! Users will now receive 1 random token when buying any voucher.');
-      } catch(e) {
-        alert('ERROR: ' + e.message);
-      }
-    }
   </script>
-
-  <!-- OWNER ONLY: Vault Setup Button - remove after setup is done -->
-  <button onclick="setupVault()" style="position:fixed;bottom:20px;right:20px;background:#ef4444;color:white;padding:15px 20px;font-size:14px;font-weight:bold;z-index:9999;border-radius:10px;cursor:pointer;border:none;font-family:monospace;">
-    🔧 SETUP VAULT
-  </button>
-
 </body>
 </html>
