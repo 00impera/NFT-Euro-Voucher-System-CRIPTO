@@ -576,18 +576,20 @@ async function swapGetQuote() {
       method: 'POST',
       headers: nearHeaders(),
       body: JSON.stringify({
+        dry: false,
+        depositMode: 'SIMPLE',
         swapType: 'EXACT_INPUT',
-        tokenIn: swapFrom.asset,          // ✅ FIXED: was originAsset
-        tokenOut: swapTo.asset,           // ✅ FIXED: was destinationAsset
-        amountIn: amountRaw,              // ✅ FIXED: was amount
+        slippageTolerance: 100,
+        originAsset: swapFrom.asset,
         depositType: 'ORIGIN_CHAIN',
+        destinationAsset: swapTo.asset,
+        amount: amountRaw,
         refundTo: userAddress,
         refundType: 'ORIGIN_CHAIN',
         recipient: userAddress,
         recipientType: 'DESTINATION_CHAIN',
         deadline: deadline,
-        slippageTolerance: 100,
-        dry: false
+        quoteWaitingTimeMs: 3000
       })
     });
 
