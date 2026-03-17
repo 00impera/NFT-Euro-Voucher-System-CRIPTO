@@ -191,8 +191,8 @@
     <div class="swap-input-wrap mb-1">
       <input class="swap-amt" id="swapAmtOut" placeholder="0.00" readonly>
       <div class="tok-select" onclick="swapOpenSheet('to')">
-        <div class="tok-icon" id="swapToIcon" style="background:#bf00ff20;color:#bf00ff">🍺</div>
-        <span id="swapToSym">MON</span>
+        <div class="tok-icon" id="swapToIcon" style="background:#00C1DE20;color:#00C1DE">Ⓝ</div>
+        <span id="swapToSym">NEAR</span>
         <span style="opacity:0.4">▾</span>
       </div>
     </div>
@@ -447,15 +447,16 @@ const NEAR_JWT = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjIwMjUtMDEtMTItdj
 const NEAR_API = 'https://1click.chaindefuser.com';
 
 const SWAP_TOKENS = [
-  {sym:'ETH',  name:'Ethereum',    icon:'Ξ',  color:'#627EEA', asset:'nep141:eth.omft.near',                                                           depositChain:'ethereum', depositChainId:'0x1',    isNative:true,  decimals:18, price:3400},
-  {sym:'USDC', name:'USDC (ETH)',  icon:'$',  color:'#2775CA', asset:'nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near',               depositChain:'ethereum', depositChainId:'0x1',    isNative:false, tokenAddress:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', decimals:6,  price:1},
-  {sym:'USDT', name:'Tether (ETH)',icon:'₮',  color:'#26A17B', asset:'nep141:eth-0xdac17f958d2ee523a2206206994597c13d831ec7.omft.near',               depositChain:'ethereum', depositChainId:'0x1',    isNative:false, tokenAddress:'0xdac17f958d2ee523a2206206994597c13d831ec7', decimals:6,  price:1},
-  {sym:'USDC', name:'USDC (Base)', icon:'$B', color:'#0052FF', asset:'nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near',              depositChain:'base',     depositChainId:'0x2105', isNative:false, tokenAddress:'0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', decimals:6,  price:1},
-  {sym:'BNB',  name:'BNB',         icon:'◆',  color:'#F3BA2F', asset:'nep141:bsc-0x0000000000000000000000000000000000000000.omft.near',                depositChain:'bsc',      depositChainId:'0x38',   isNative:true,  decimals:18, price:580},
-  {sym:'MON',  name:'Monad',       icon:'🍺', color:'#bf00ff', asset:'nep141:monad-0x0000000000000000000000000000000000000000.omft.near',              depositChain:'monad',    depositChainId:'0x8F',   isNative:true,  decimals:18, price:12},
-  {sym:'NEAR', name:'NEAR',        icon:'Ⓝ',  color:'#00C1DE', asset:'nep141:wrap.near',                                                               depositChain:'near',     depositChainId:null,     isNative:false, decimals:24, price:8},
-  {sym:'SOL',  name:'Solana',      icon:'◎',  color:'#9945FF', asset:'nep141:sol.omft.near',                                                           depositChain:'solana',   depositChainId:null,     isNative:true,  decimals:9,  price:170},
-  {sym:'BTC',  name:'Bitcoin',     icon:'₿',  color:'#F7931A', asset:'nep141:btc.omft.near',                                                           depositChain:'bitcoin',  depositChainId:null,     isNative:true,  decimals:8,  price:65000},
+  {sym:'ETH',  name:'Ethereum',    icon:'Ξ',  color:'#627EEA', asset:'nep141:eth.omft.near',                                                                        depositChain:'ethereum', depositChainId:'0x1',    isNative:true,  decimals:18, price:2330},
+  {sym:'USDC', name:'USDC (ETH)',  icon:'$',  color:'#2775CA', asset:'nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near',                            depositChain:'ethereum', depositChainId:'0x1',    isNative:false, tokenAddress:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', decimals:6,  price:1},
+  {sym:'USDT', name:'Tether (ETH)',icon:'₮',  color:'#26A17B', asset:'nep141:eth-0xdac17f958d2ee523a2206206994597c13d831ec7.omft.near',                            depositChain:'ethereum', depositChainId:'0x1',    isNative:false, tokenAddress:'0xdac17f958d2ee523a2206206994597c13d831ec7', decimals:6,  price:1},
+  {sym:'DAI',  name:'DAI (ETH)',   icon:'◈',  color:'#F4B731', asset:'nep141:eth-0x6b175474e89094c44da98b954eedeac495271d0f.omft.near',                            depositChain:'ethereum', depositChainId:'0x1',    isNative:false, tokenAddress:'0x6b175474e89094c44da98b954eedeac495271d0f', decimals:18, price:1},
+  {sym:'NEAR', name:'NEAR',        icon:'Ⓝ',  color:'#00C1DE', asset:'nep141:wrap.near',                                                                            depositChain:'near',     depositChainId:null,     isNative:false, decimals:24, price:1.46},
+  {sym:'BTC',  name:'Bitcoin',     icon:'₿',  color:'#F7931A', asset:'nep141:btc.omft.near',                                                                        depositChain:'bitcoin',  depositChainId:null,     isNative:true,  decimals:8,  price:74535},
+  {sym:'SOL',  name:'Solana',      icon:'◎',  color:'#9945FF', asset:'nep141:sol.omft.near',                                                                        depositChain:'solana',   depositChainId:null,     isNative:true,  decimals:9,  price:94},
+  {sym:'XRP',  name:'XRP',         icon:'✕',  color:'#00AAE4', asset:'nep141:xrp.omft.near',                                                                        depositChain:'xrp',      depositChainId:null,     isNative:true,  decimals:6,  price:1.53},
+  {sym:'DOGE', name:'Dogecoin',    icon:'Ð',  color:'#C2A633', asset:'nep141:doge.omft.near',                                                                       depositChain:'doge',     depositChainId:null,     isNative:true,  decimals:8,  price:0.10},
+  {sym:'ARB',  name:'Arbitrum',    icon:'△',  color:'#28A0F0', asset:'nep141:arb-0x912ce59144191c1204e64559fe8253a0e49e6548.omft.near',                            depositChain:'arbitrum', depositChainId:'0xa4b1', isNative:false, tokenAddress:'0x912ce59144191c1204e64559fe8253a0e49e6548', decimals:18, price:0.11},
 ];
 
 const EVM_CHAIN_PARAMS = {
@@ -465,8 +466,8 @@ const EVM_CHAIN_PARAMS = {
   '0x8F':   {chainId:'0x8F',   chainName:'Monad Mainnet',    nativeCurrency:{name:'MON',symbol:'MON',decimals:18}, rpcUrls:['https://rpc.monad.xyz'],              blockExplorerUrls:['https://explorer.monad.xyz']},
 };
 
-let swapFrom = SWAP_TOKENS[0];
-let swapTo   = SWAP_TOKENS[5];
+let swapFrom = SWAP_TOKENS[0];  // ETH
+let swapTo   = SWAP_TOKENS[4];  // NEAR
 let swapSide = 'from';
 let swapQuote = null;
 let swapPollTimer = null;
