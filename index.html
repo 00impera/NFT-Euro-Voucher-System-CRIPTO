@@ -292,7 +292,6 @@ async function ensureMonad(provider) {
     const chainHex = await provider.request({ method: 'eth_chainId' });
     if (parseInt(chainHex, 16) === MONAD_CHAIN_ID_DEC) return true;
   } catch(e) {}
-
   showStatus('⚠️ Switching to Monad network...');
   try {
     await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: MONAD_CHAIN_ID_HEX }] });
@@ -300,7 +299,6 @@ async function ensureMonad(provider) {
     return true;
   } catch (err) {
     if (err.code === 4001) { showStatus('❌ Network switch rejected'); return false; }
-    // Chain not added — try adding it
     try {
       await provider.request({ method: 'wallet_addEthereumChain', params: [MONAD_NETWORK_PARAMS] });
       await new Promise(r => setTimeout(r, 1000));
@@ -312,111 +310,63 @@ async function ensureMonad(provider) {
   }
 }
 
-// ════════════════════════════════════════
-// FINISH CONNECT — called after accounts + network confirmed
-// ════════════════════════════════════════
 function finishConnect(provider, address, label) {
   evmProvider = provider;
   userAddress = address;
-
-  // Build web3 + contract using the SAME provider (no HttpProvider fallback)
   web3 = new Web3(provider);
   contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-
   $walletAddress.textContent = userAddress.slice(0, 8) + '...' + userAddress.slice(-6);
   $walletType.textContent = label;
   $walletButtons.style.display = 'none';
   $connectedWallet.style.display = 'block';
   $statusMessage.classList.add('hidden');
   updatePurchaseBtn();
-
-  // Listen for account changes
   provider.on?.('accountsChanged', function(accs) {
-    if (!accs || !accs.length) {
-      disconnectWallet();
-    } else {
+    if (!accs || !accs.length) { disconnectWallet(); }
+    else {
       userAddress = accs[0];
       web3 = new Web3(provider);
       contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
       $walletAddress.textContent = userAddress.slice(0, 8) + '...' + userAddress.slice(-6);
     }
   });
-
-  // Reload on chain change
-  provider.on?.('chainChanged', function() {
-    location.reload();
-  });
+  provider.on?.('chainChanged', function() { location.reload(); });
 }
 
-// ════════════════════════════════════════
-// CONNECT INJECTED (MetaMask / Rabby / Coinbase / Any)
-// ════════════════════════════════════════
 async function connectInjected(type) {
   if (!window.ethereum) {
-    const links = {
-      metamask: 'https://metamask.io/download.html',
-      rabby: 'https://rabby.io',
-      coinbase: 'https://www.coinbase.com/wallet/downloads'
-    };
+    const links = { metamask: 'https://metamask.io/download.html', rabby: 'https://rabby.io', coinbase: 'https://www.coinbase.com/wallet/downloads' };
     showStatus(`⚠️ No wallet detected. <a href="${links[type]||links.metamask}" target="_blank" class="underline text-blue-300">Install a wallet</a> and refresh.`);
     return;
   }
-
   showStatus('🔄 Connecting wallet...');
-
-  // Pick the right provider
   let provider = window.ethereum;
   const providers = window.ethereum.providers || [];
-
   if (providers.length > 0) {
-    if (type === 'metamask') {
-      provider = providers.find(p => p.isMetaMask && !p.isRabby) || provider;
-    } else if (type === 'rabby') {
-      provider = providers.find(p => p.isRabby) || provider;
-    } else if (type === 'coinbase') {
-      provider = providers.find(p => p.isCoinbaseWallet) || window.coinbaseWalletExtension || provider;
-    }
+    if (type === 'metamask') provider = providers.find(p => p.isMetaMask && !p.isRabby) || provider;
+    else if (type === 'rabby') provider = providers.find(p => p.isRabby) || provider;
+    else if (type === 'coinbase') provider = providers.find(p => p.isCoinbaseWallet) || window.coinbaseWalletExtension || provider;
   } else {
     if (type === 'rabby' && window.ethereum.isRabby) provider = window.ethereum;
-    else if (type === 'coinbase' && (window.ethereum.isCoinbaseWallet || window.coinbaseWalletExtension)) {
-      provider = window.coinbaseWalletExtension || window.ethereum;
-    }
+    else if (type === 'coinbase' && (window.ethereum.isCoinbaseWallet || window.coinbaseWalletExtension)) provider = window.coinbaseWalletExtension || window.ethereum;
   }
-
   try {
-    // Request accounts
     const accounts = await provider.request({ method: 'eth_requestAccounts' });
-    if (!accounts || accounts.length === 0) {
-      showStatus('❌ No accounts returned. Please unlock your wallet.');
-      return;
-    }
-
-    // Ensure Monad network
+    if (!accounts || accounts.length === 0) { showStatus('❌ No accounts returned.'); return; }
     const ok = await ensureMonad(provider);
     if (!ok) return;
-
     const labels = { metamask: '🦊 MetaMask', rabby: '🐰 Rabby', coinbase: '🔵 Coinbase', any: '🔗 Wallet' };
     finishConnect(provider, accounts[0], labels[type] || '🔗 Wallet');
     showStatus('✅ Connected to Monad Mainnet!');
-
   } catch (err) {
-    console.error('connectInjected error:', err);
-    if (err.code === 4001) {
-      showStatus('❌ Connection rejected by user');
-    } else if (err.code === -32002) {
-      showStatus('⚠️ MetaMask already has a pending request — check the extension popup');
-    } else {
-      showStatus('❌ Connection failed: ' + (err.message || String(err)));
-    }
+    if (err.code === 4001) showStatus('❌ Connection rejected by user');
+    else if (err.code === -32002) showStatus('⚠️ MetaMask already has a pending request');
+    else showStatus('❌ Connection failed: ' + (err.message || String(err)));
   }
 }
 
-// ════════════════════════════════════════
-// DISCONNECT
-// ════════════════════════════════════════
 function disconnectWallet() {
-  web3 = null; contract = null; userAddress = null;
-  selectedVoucher = null; evmProvider = null;
+  web3 = null; contract = null; userAddress = null; selectedVoucher = null; evmProvider = null;
   $walletButtons.style.display = 'grid';
   $connectedWallet.style.display = 'none';
   document.querySelectorAll('.voucher-btn').forEach(b => b.classList.remove('selected'));
@@ -425,9 +375,6 @@ function disconnectWallet() {
 }
 document.getElementById('disconnectBtn').addEventListener('click', disconnectWallet);
 
-// ════════════════════════════════════════
-// VOUCHER SELECTION
-// ════════════════════════════════════════
 document.querySelectorAll('.voucher-btn').forEach(btn => {
   btn.addEventListener('click', function() {
     if (!userAddress) { showStatus('⚠️ Please connect wallet first'); return; }
@@ -448,9 +395,6 @@ function updatePurchaseBtn() {
   }
 }
 
-// ════════════════════════════════════════
-// PURCHASE VOUCHER
-// ════════════════════════════════════════
 $purchaseBtn.addEventListener('click', async function() {
   if (!selectedVoucher || !userAddress || !contract) return;
   try {
@@ -469,21 +413,15 @@ $purchaseBtn.addEventListener('click', async function() {
   }
 });
 
-// ════════════════════════════════════════
-// READ VOUCHER
-// ════════════════════════════════════════
 document.getElementById('readVoucherBtn').addEventListener('click', async function() {
   const tokenId = document.getElementById('readTokenId').value;
   $voucherResult.textContent = '';
   if (!tokenId || isNaN(tokenId)) { $voucherResult.textContent = 'Please enter a valid tokenId.'; return; }
-
-  // Read-only: use HttpProvider if no wallet
   let readContract = contract;
   if (!readContract) {
     const readWeb3 = new Web3(new Web3.providers.HttpProvider(MONAD_RPC));
     readContract = new readWeb3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
   }
-
   try {
     $voucherResult.textContent = 'Loading...';
     const r = await readContract.methods.getVoucher(tokenId).call();
@@ -503,32 +441,32 @@ document.getElementById('readVoucherBtn').addEventListener('click', async functi
 });
 
 // ════════════════════════════════════════
-// NEAR INTENTS SWAP
+// NEAR INTENTS SWAP — FIXED
 // ════════════════════════════════════════
 const NEAR_JWT = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjIwMjUtMDEtMTItdjEifQ.eyJ2IjoxLCJrZXlfdHlwZSI6ImRpc3RyaWJ1dGlvbl9jaGFubmVsIiwicGFydG5lcl9pZCI6ImNyeXB0b2Nhc2gtbmZ0IiwiaWF0IjoxNzczMDc3MzExLCJleHAiOjE4MDQ2MTMzMTF9.Wi55S8cwVmAXPtOG0ymr7ldX-5CXVygzuanbjAAJHP-Am14_52C6i4cQG5FvjcAorw0KD8k8JD_YX5AM4QKhNqYtU5gsI4-KKe0KavO5_69NowzUKc_ubtjYn85eFjWskzZQvICMqSZkdGOSnMT_hNEePA8qYi_wSov4a4bQh4zIfNA0znEdDIV3rGI_bDM9dgOk0PnJRIpwi_aXOQ8Q4e50IO2UMrZEDtBVmUhK5-Mno3S_iS7tZl4QSui_4_bNCapQolFwUPB9Zqyxay_6rPVEr7j-8Ez5-htwkR5ZYvTb1mJaj3DVPpWPL9QTxhjvhbJ7nKrWpibcWX3AVoXZ6g';
 const NEAR_API = 'https://1click.chaindefuser.com';
 
 const SWAP_TOKENS = [
-  {sym:'ETH', name:'Ethereum', icon:'Ξ', color:'#627EEA', asset:'nep141:eth.omft.near', depositChain:'ethereum', depositChainId:'0x1', isNative:true, decimals:18, price:3400},
-  {sym:'USDC', name:'USDC (ETH)', icon:'$', color:'#2775CA', asset:'nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near', depositChain:'ethereum', depositChainId:'0x1', isNative:false, tokenAddress:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', decimals:6, price:1},
-  {sym:'USDT', name:'Tether (ETH)', icon:'₮', color:'#26A17B', asset:'nep141:eth-0xdac17f958d2ee523a2206206994597c13d831ec7.omft.near', depositChain:'ethereum', depositChainId:'0x1', isNative:false, tokenAddress:'0xdac17f958d2ee523a2206206994597c13d831ec7', decimals:6, price:1},
-  {sym:'USDC', name:'USDC (Base)', icon:'$B', color:'#0052FF', asset:'nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near', depositChain:'base', depositChainId:'0x2105', isNative:false, tokenAddress:'0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', decimals:6, price:1},
-  {sym:'BNB', name:'BNB', icon:'◆', color:'#F3BA2F', asset:'nep141:bsc-0x0000000000000000000000000000000000000000.omft.near', depositChain:'bsc', depositChainId:'0x38', isNative:true, decimals:18, price:580},
-  {sym:'MON', name:'Monad', icon:'🍺', color:'#bf00ff', asset:'nep141:monad-0x0000000000000000000000000000000000000000.omft.near', depositChain:'monad', depositChainId:'0x8F', isNative:true, decimals:18, price:12},
-  {sym:'NEAR', name:'NEAR', icon:'Ⓝ', color:'#00C1DE', asset:'nep141:wrap.near', depositChain:'near', depositChainId:null, isNative:false, decimals:24, price:8},
-  {sym:'SOL', name:'Solana', icon:'◎', color:'#9945FF', asset:'nep141:sol.omft.near', depositChain:'solana', depositChainId:null, isNative:true, decimals:9, price:170},
-  {sym:'BTC', name:'Bitcoin', icon:'₿', color:'#F7931A', asset:'nep141:btc.omft.near', depositChain:'bitcoin', depositChainId:null, isNative:true, decimals:8, price:65000},
+  {sym:'ETH',  name:'Ethereum',    icon:'Ξ',  color:'#627EEA', asset:'nep141:eth.omft.near',                                                           depositChain:'ethereum', depositChainId:'0x1',    isNative:true,  decimals:18, price:3400},
+  {sym:'USDC', name:'USDC (ETH)',  icon:'$',  color:'#2775CA', asset:'nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near',               depositChain:'ethereum', depositChainId:'0x1',    isNative:false, tokenAddress:'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', decimals:6,  price:1},
+  {sym:'USDT', name:'Tether (ETH)',icon:'₮',  color:'#26A17B', asset:'nep141:eth-0xdac17f958d2ee523a2206206994597c13d831ec7.omft.near',               depositChain:'ethereum', depositChainId:'0x1',    isNative:false, tokenAddress:'0xdac17f958d2ee523a2206206994597c13d831ec7', decimals:6,  price:1},
+  {sym:'USDC', name:'USDC (Base)', icon:'$B', color:'#0052FF', asset:'nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near',              depositChain:'base',     depositChainId:'0x2105', isNative:false, tokenAddress:'0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', decimals:6,  price:1},
+  {sym:'BNB',  name:'BNB',         icon:'◆',  color:'#F3BA2F', asset:'nep141:bsc-0x0000000000000000000000000000000000000000.omft.near',                depositChain:'bsc',      depositChainId:'0x38',   isNative:true,  decimals:18, price:580},
+  {sym:'MON',  name:'Monad',       icon:'🍺', color:'#bf00ff', asset:'nep141:monad-0x0000000000000000000000000000000000000000.omft.near',              depositChain:'monad',    depositChainId:'0x8F',   isNative:true,  decimals:18, price:12},
+  {sym:'NEAR', name:'NEAR',        icon:'Ⓝ',  color:'#00C1DE', asset:'nep141:wrap.near',                                                               depositChain:'near',     depositChainId:null,     isNative:false, decimals:24, price:8},
+  {sym:'SOL',  name:'Solana',      icon:'◎',  color:'#9945FF', asset:'nep141:sol.omft.near',                                                           depositChain:'solana',   depositChainId:null,     isNative:true,  decimals:9,  price:170},
+  {sym:'BTC',  name:'Bitcoin',     icon:'₿',  color:'#F7931A', asset:'nep141:btc.omft.near',                                                           depositChain:'bitcoin',  depositChainId:null,     isNative:true,  decimals:8,  price:65000},
 ];
 
 const EVM_CHAIN_PARAMS = {
-  '0x1':    {chainId:'0x1',    chainName:'Ethereum Mainnet', nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18}, rpcUrls:['https://cloudflare-eth.com'], blockExplorerUrls:['https://etherscan.io']},
-  '0x2105': {chainId:'0x2105', chainName:'Base',             nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18}, rpcUrls:['https://mainnet.base.org'],   blockExplorerUrls:['https://basescan.org']},
-  '0x38':   {chainId:'0x38',   chainName:'BNB Smart Chain',  nativeCurrency:{name:'BNB',symbol:'BNB',decimals:18}, rpcUrls:['https://bsc-dataseed.binance.org'], blockExplorerUrls:['https://bscscan.com']},
-  '0x8F':   {chainId:'0x8F',   chainName:'Monad Mainnet',    nativeCurrency:{name:'MON',symbol:'MON',decimals:18}, rpcUrls:['https://rpc.monad.xyz'],      blockExplorerUrls:['https://explorer.monad.xyz']},
+  '0x1':    {chainId:'0x1',    chainName:'Ethereum Mainnet', nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18}, rpcUrls:['https://cloudflare-eth.com'],        blockExplorerUrls:['https://etherscan.io']},
+  '0x2105': {chainId:'0x2105', chainName:'Base',             nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18}, rpcUrls:['https://mainnet.base.org'],           blockExplorerUrls:['https://basescan.org']},
+  '0x38':   {chainId:'0x38',   chainName:'BNB Smart Chain',  nativeCurrency:{name:'BNB',symbol:'BNB',decimals:18}, rpcUrls:['https://bsc-dataseed.binance.org'],   blockExplorerUrls:['https://bscscan.com']},
+  '0x8F':   {chainId:'0x8F',   chainName:'Monad Mainnet',    nativeCurrency:{name:'MON',symbol:'MON',decimals:18}, rpcUrls:['https://rpc.monad.xyz'],              blockExplorerUrls:['https://explorer.monad.xyz']},
 };
 
 let swapFrom = SWAP_TOKENS[0];
-let swapTo   = SWAP_TOKENS[5]; // MON
+let swapTo   = SWAP_TOKENS[5];
 let swapSide = 'from';
 let swapQuote = null;
 let swapPollTimer = null;
@@ -562,7 +500,7 @@ function swapResetQuote() {
   document.getElementById('swapMsg').className = 'near-msg';
   document.getElementById('swapDepositBox').classList.remove('show');
   document.getElementById('swapTracker').classList.remove('show');
-  ['step1','step2','step3','step4'].forEach(id => {
+  ['step1','step2','step3','step4'].forEach(function(id) {
     const el = document.getElementById(id);
     el.className = 'tracker-step pending';
     el.querySelector('.step-icon').textContent = id.replace('step','');
@@ -616,6 +554,9 @@ function swapCopyAddr() {
   navigator.clipboard.writeText(addr).then(function() { swapMsg('ok', '✅ Address copied!'); });
 }
 
+// ════════════════════════════════════════
+// GET QUOTE — FIXED: tokenIn / tokenOut
+// ════════════════════════════════════════
 async function swapGetQuote() {
   const amt = parseFloat(document.getElementById('swapAmtIn').value);
   if (!amt || amt <= 0) { swapMsg('err', '⚠ Enter an amount'); return; }
@@ -632,27 +573,37 @@ async function swapGetQuote() {
 
   try {
     const resp = await fetch(NEAR_API + '/v0/quote', {
-      method: 'POST', headers: nearHeaders(),
+      method: 'POST',
+      headers: nearHeaders(),
       body: JSON.stringify({
         swapType: 'EXACT_INPUT',
-        originAsset: swapFrom.asset,
+        tokenIn: swapFrom.asset,          // ✅ FIXED: was originAsset
+        tokenOut: swapTo.asset,           // ✅ FIXED: was destinationAsset
+        amountIn: amountRaw,              // ✅ FIXED: was amount
         depositType: 'ORIGIN_CHAIN',
-        destinationAsset: swapTo.asset,
-        amount: amountRaw,
-        refundTo: userAddress, refundType: 'ORIGIN_CHAIN',
-        recipient: userAddress, recipientType: 'DESTINATION_CHAIN',
+        refundTo: userAddress,
+        refundType: 'ORIGIN_CHAIN',
+        recipient: userAddress,
+        recipientType: 'DESTINATION_CHAIN',
         deadline: deadline,
         slippageTolerance: 100,
         dry: false
       })
     });
-    if (!resp.ok) throw new Error('API ' + resp.status + ': ' + await resp.text().catch(function(){return'';}));
+
+    if (!resp.ok) {
+      const errText = await resp.text().catch(function(){return '';});
+      throw new Error('API ' + resp.status + ': ' + errText);
+    }
+
     const data = await resp.json();
     swapQuote = data;
 
     const rawOut = data.quote?.amountOut || data.amountOut || '0';
     const outAmt = Number(BigInt(rawOut.toString())) / Math.pow(10, swapTo.decimals);
-    const minOut = data.quote?.minAmountOut ? Number(BigInt(data.quote.minAmountOut.toString())) / Math.pow(10, swapTo.decimals) : outAmt * 0.99;
+    const minOut = data.quote?.minAmountOut
+      ? Number(BigInt(data.quote.minAmountOut.toString())) / Math.pow(10, swapTo.decimals)
+      : outAmt * 0.99;
     const depositAddr = data.quote?.depositAddress || data.depositAddress;
     const depositMemo = data.quote?.depositMemo || data.depositMemo || null;
     const eta = data.quote?.timeEstimate || 120;
@@ -681,6 +632,7 @@ async function swapGetQuote() {
     }
   } catch(e) {
     console.warn('Quote error:', e);
+    // Fallback estimated rate
     const fallback = (amt * swapFrom.price / swapTo.price) * 0.9975;
     document.getElementById('swapAmtOut').value = fallback.toFixed(6);
     document.getElementById('swapQOut').textContent = fallback.toFixed(6) + ' ' + swapTo.sym + ' (est.)';
@@ -690,7 +642,7 @@ async function swapGetQuote() {
     document.getElementById('swapQDeadline').textContent = new Date(Date.now()+5*60000).toLocaleTimeString();
     document.getElementById('swapQDepChain').textContent = swapFrom.depositChain.toUpperCase() + ' → ' + swapTo.depositChain.toUpperCase();
     document.getElementById('swapQuoteBox').classList.add('show');
-    swapMsg('err', '⚠ API error — showing estimated rate\n' + (e.message||'').slice(0, 100));
+    swapMsg('err', '⚠ API error — showing estimated rate\n' + (e.message||'').slice(0, 150));
   } finally {
     btn.textContent = '⟳ REFRESH QUOTE'; btn.disabled = false;
   }
@@ -712,7 +664,6 @@ async function swapExecute() {
   swapMsg('info', '⟳ Confirm deposit in your wallet...');
 
   try {
-    // Non-EVM chains: manual instructions
     if (['bitcoin','solana','near'].includes(swapFrom.depositChain)) {
       const memo = swapQuote.quote?.depositMemo || '';
       swapMsg('info', `Manual deposit (${swapFrom.depositChain.toUpperCase()})\nSend ${amtIn} ${swapFrom.sym} to:\n${depositAddr}${memo ? '\nMEMO: '+memo : ''}`);
@@ -723,7 +674,6 @@ async function swapExecute() {
 
     if (!evmProvider) { swapMsg('err', '❌ No EVM wallet connected'); btn.disabled=false; btn.textContent='⬡ EXECUTE SWAP'; swapSetStep(2,'failed'); return; }
 
-    // Switch to origin chain
     const targetChainId = swapFrom.depositChainId;
     try {
       const curChain = await evmProvider.request({ method: 'eth_chainId' });
@@ -765,7 +715,6 @@ async function swapExecute() {
     swapMsg('info', '✅ Deposit sent!\nTX: ' + txHash + '\n\nPolling for completion...');
     btn.textContent = '⟳ WAITING...';
 
-    // Notify NEAR Intents
     try {
       await fetch(NEAR_API + '/v0/deposit', {
         method: 'POST', headers: nearHeaders(),
@@ -786,6 +735,7 @@ async function swapExecute() {
 function swapStartPolling(depositAddr) {
   if (swapPollTimer) clearInterval(swapPollTimer);
   let attempts = 0;
+  const btn_exec = document.getElementById('swapBtnExec');
   swapPollTimer = setInterval(async function() {
     if (++attempts > 72) {
       clearInterval(swapPollTimer); swapPollTimer = null;
@@ -815,12 +765,12 @@ function swapStartPolling(depositAddr) {
         clearInterval(swapPollTimer); swapPollTimer = null;
         swapSetStep(3,'failed'); swapSetStep(4,'failed');
         swapMsg('err', '↩ Refunded: ' + (d.refundReason||'unknown'));
-        document.getElementById('swapBtnExec').disabled=false; document.getElementById('swapBtnExec').textContent='⬡ EXECUTE SWAP';
+        btn_exec.disabled=false; btn_exec.textContent='⬡ EXECUTE SWAP';
       } else if (st === 'FAILED') {
         clearInterval(swapPollTimer); swapPollTimer = null;
         swapSetStep(3,'failed'); swapSetStep(4,'failed');
         swapMsg('err', '❌ Failed: ' + (d.errorMessage||''));
-        document.getElementById('swapBtnExec').disabled=false; document.getElementById('swapBtnExec').textContent='⬡ EXECUTE SWAP';
+        btn_exec.disabled=false; btn_exec.textContent='⬡ EXECUTE SWAP';
       } else if (st === 'INCOMPLETE_DEPOSIT') {
         swapMsg('err', '⚠ Incomplete deposit — sent less than minimum');
       }
