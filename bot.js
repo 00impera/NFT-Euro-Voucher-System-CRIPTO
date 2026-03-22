@@ -12,7 +12,7 @@ console.log('💶 Euro Voucher Bot is running...');
 const mainMenu = {
   reply_markup: {
     inline_keyboard: [
-      [{ text: '🚀 BUY NOW — Get Euro Voucher NFT!', url: WEBSITE }],
+      [{ text: '🚀 BUY NOW — Get Euro Voucher NFT!', web_app: { url: WEBSITE } }],
       [{ text: '🎁 FREE AIRDROP — Claim Now!', url: WEBSITE }],
       [{ text: '🎫 View Vouchers', callback_data: 'vouchers' }, { text: '💶 How It Works', callback_data: 'howto' }],
       [{ text: '📜 Contract', callback_data: 'contract' }, { text: '❓ Help', callback_data: 'help' }],
