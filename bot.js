@@ -1,7 +1,7 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 
-const token = process.env.BOT_TOKEN || "8716778805:AAEPRYBGAy0YH9BCjo41o-TNJ5bVbKhB49M";
+const token = process.env.BOT_TOKEN;
 const WEBSITE = 'https://nftcriptocash.nelutz2you.workers.dev';
 const CONTRACT = 'update_with_real_contract';
 
