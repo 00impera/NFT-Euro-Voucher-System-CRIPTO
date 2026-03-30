@@ -2,14 +2,30 @@
 ╔══════════════════════════════════════════════════════════╗
 ║   EUROSPACE + EURO VOUCHER NFT — Telegram Bot            ║
 ║   Python · python-telegram-bot v20+                      ║
-║   pip install python-telegram-bot requests               ║
+║   pip install python-telegram-bot requests python-dotenv ║
+║                                                          ║
+║   Setup:                                                 ║
+║     1. Create a .env file next to this script            ║
+║     2. Add:  BOT_TOKEN=your_token_here                   ║
+║     3. Run:  python euro_bot.py                          ║
+║                                                          ║
+║   Never commit .env to git — add it to .gitignore        ║
 ╚══════════════════════════════════════════════════════════╝
 """
 
 import os
+import sys
 import logging
 import requests
 from datetime import datetime, timezone
+
+# Load .env file if present (pip install python-dotenv)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # python-dotenv not installed — rely on real env vars
+
 from telegram import (
     Update,
     InlineKeyboardButton,
@@ -27,7 +43,13 @@ from telegram.ext import (
 # ══════════════════════════════════════════════════════════
 # CONFIG
 # ══════════════════════════════════════════════════════════
-BOT_TOKEN   = os.getenv("BOT_TOKEN", "8566606318:AAF8IRAwUxct4WvO2zHWSkWShoBQtg9NNrY")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+if not BOT_TOKEN:
+    sys.exit(
+        "\n❌  BOT_TOKEN is not set!\n"
+        "   Create a .env file with:  BOT_TOKEN=your_token_here\n"
+        "   Or export it:             export BOT_TOKEN=your_token_here\n"
+    )
 
 # ── Mini Apps (WebApp URLs) ──────────────────────────────
 EUROSPACE_APP = "https://eurocoin-websitecom.nelutz2you.workers.dev"   # EUROSPACE presale
