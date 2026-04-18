@@ -1,5 +1,6 @@
 {
-  "name": "eurovoucher-nft",
-  "compatibility_date": "2025-01-01",
-  "compatibility_flags": ["nodejs_compat"]
+  "name": "nftcriptotokens",
+  "compatibility_date": "2026-04-18",
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": ".vercel/output/static"
 }
