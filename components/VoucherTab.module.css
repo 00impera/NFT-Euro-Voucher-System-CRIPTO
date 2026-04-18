@@ -1,0 +1,142 @@
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary), var(--cyan), transparent);
+  opacity: 0.5;
+}
+.cardTitle {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: #60a5fa;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.voucherGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.voucherBtn {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  border: 2px solid rgba(59,130,246,0.4);
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.voucherBtn:hover { border-color: rgba(59,130,246,0.8); transform: scale(1.03); }
+.voucherBtn.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(0,255,136,0.4);
+  transform: scale(1.05);
+}
+.voucherOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,20,0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.voucherEuro {
+  font-family: 'Orbitron', monospace;
+  font-size: 24px;
+  font-weight: 900;
+  color: #60a5fa;
+}
+.voucherMon { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+.btnBuy {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-h));
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: 0 4px 15px rgba(37,99,235,0.3);
+}
+.btnBuy:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(37,99,235,0.5); }
+.btnBuy:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.statusMsg {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-family: monospace;
+}
+.success { background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.3); color: var(--success); }
+.error   { background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.3); color: var(--error); }
+.pending { background: rgba(37,99,235,0.1); border: 1px solid rgba(37,99,235,0.3); color: #60a5fa; }
+.info    { background: rgba(0,229,255,0.07); border: 1px solid rgba(0,229,255,0.2); color: var(--cyan); }
+
+.readRow { display: flex; gap: 10px; margin-bottom: 12px; }
+.readInput {
+  flex: 1;
+  background: var(--bg2);
+  border: 1px solid rgba(255,0,0,0.4);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  outline: none;
+}
+.readInput:focus { border-color: rgba(255,0,0,0.8); }
+.btnRead {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #cc0000, #ff0000);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.btnRead:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,0,0,0.4); }
+.btnRead:disabled { opacity: 0.5; cursor: not-allowed; }
+.readResult {
+  background: var(--card2);
+  border: 1px solid rgba(255,0,0,0.2);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 12px;
+  line-height: 2;
+  color: var(--text);
+}
+.readResult b { color: var(--muted); }
+
+.coinRow { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.coinLogo {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(59,130,246,0.4);
+  transition: all 0.2s;
+}
+.coinLogo:hover { border-color: var(--accent); transform: scale(1.1); }
